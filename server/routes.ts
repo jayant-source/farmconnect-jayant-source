@@ -209,9 +209,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const updateData = { ...req.body };
       
-      // Convert age and farmSize to numbers if provided
-      if (updateData.age) updateData.age = parseInt(updateData.age);
-      if (updateData.farmSize) updateData.farmSize = parseFloat(updateData.farmSize);
+      // Convert age and farmSize to numbers if provided and not empty
+      if (updateData.age && updateData.age.trim() !== '') {
+        const parsedAge = parseInt(updateData.age);
+        updateData.age = isNaN(parsedAge) ? null : parsedAge;
+      } else if (updateData.age === '') {
+        updateData.age = null;
+      }
+      
+      if (updateData.farmSize && updateData.farmSize.trim() !== '') {
+        const parsedFarmSize = parseFloat(updateData.farmSize);
+        updateData.farmSize = isNaN(parsedFarmSize) ? null : parsedFarmSize;
+      } else if (updateData.farmSize === '') {
+        updateData.farmSize = null;
+      }
       
       // Mark user as onboarded if they're updating their profile
       updateData.isOnboarded = true;

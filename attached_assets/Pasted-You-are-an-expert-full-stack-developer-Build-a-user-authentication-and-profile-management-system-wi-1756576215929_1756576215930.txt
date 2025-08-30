@@ -1,0 +1,86 @@
+You are an expert full-stack developer. Build a user authentication and profile management system with the following requirements:
+
+Tech Stack Preference:
+
+Backend: Node.js with Express
+
+Frontend: React (or Next.js if you prefer fullstack)
+
+Database: SQLite or PostgreSQL (use SQLite for simplicity unless otherwise specified)
+
+ORM: Prisma or Sequelize (choose Prisma if possible)
+
+Features to Implement:
+
+Signup Flow
+
+User enters profile details (name, email, age, etc.) along with mobile number.
+
+Generate and send a 6-digit OTP (simulate via console log if SMS API not configured).
+
+Store the profile + mobile number + OTP in the database.
+
+On OTP verification → mark profile as verified and log the user into the homepage.
+
+Login Flow
+
+User enters mobile number.
+
+If number exists → generate OTP, validate it, and log in.
+
+If number does not exist → redirect to signup flow to create new profile.
+
+Profile Page
+
+After login, user can open the Profile tab.
+
+Fetch and display all stored profile details (name, email, age, mobile number, etc.) from DB.
+
+Allow updating of profile info (except mobile number).
+
+Database Schema Example:
+
+User {
+  id          Int @id @default(autoincrement())
+  name        String
+  email       String @unique
+  age         Int?
+  mobile      String @unique
+  otp         String?
+  otpExpiry   DateTime?
+  isVerified  Boolean @default(false)
+  createdAt   DateTime @default(now())
+}
+
+
+Routes to Implement (Express API):
+
+POST /signup → Accepts profile + mobile, stores in DB, generates OTP.
+
+POST /verify-otp → Accepts mobile + OTP, verifies and logs in user.
+
+POST /login → Accepts mobile, generates OTP if exists.
+
+GET /profile → Returns profile details of logged-in user.
+
+PUT /profile → Updates profile details (not mobile).
+
+Frontend (React/Next.js):
+
+Signup Page → Form for profile + mobile + OTP input.
+
+Login Page → Mobile number + OTP input.
+
+Homepage → Welcome message after login.
+
+Profile Page → Display profile details and update option.
+
+Extra Notes:
+
+Use JWT authentication (store token in localStorage or cookies).
+
+OTP should expire in 5 minutes.
+
+If OTP invalid/expired → resend option.
+
+Make sure errors are handled cleanly.
