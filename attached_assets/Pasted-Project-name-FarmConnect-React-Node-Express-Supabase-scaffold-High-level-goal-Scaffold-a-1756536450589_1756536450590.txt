@@ -1,0 +1,32 @@
+Project name: FarmConnect — React + Node/Express + Supabase scaffold
+
+High-level goal:
+Scaffold a beautiful, bilingual (English/Hindi) full-stack app called FarmConnect on Replit:
+- Frontend: React.js + Tailwind CSS + Framer Motion + Lottie + tsParticles + react-i18next
+- Backend: Node.js + Express.js
+- DB/Auth/Storage: Supabase
+- Integrations placeholders: Google Gemini (AI assistant + vision), OpenWeather API (weather), Government Mandi Price API (market prices)
+- OTP login mock: OTP is always 0000 for now
+- Camera integration: enable camera capture UI and upload flow (but detection returns mock result if GEMINI key not present)
+- Provide README, TODOs and placeholders for real API calls
+
+What to scaffold:
+1. Client (React) with pages: LandingHero, AuthPhone (phone + OTP=0000), Onboarding/ProfileForm, Dashboard, CropDetect (CameraCapture + preview + result modal), WeatherWidget, MandiPrices, CommunityFeed, Marketplace, HelpAssistant.
+2. Server (Express) with routes: /api/auth (send-otp, verify-otp), /api/user, /api/detect (multipart upload → store in Supabase Storage → return mocked or Gemini result), /api/weather (server-side OpenWeather call + cache), /api/mandi (gov API wrapper + cache), /api/community, /api/marketplace.
+3. Supabase schema file `/db/schema.sql` for users, disease_reports, mandi_prices, community_posts and instructions to create storage bucket `disease-images`.
+4. Environment variables (to set as Replit secrets): SUPABASE_URL, SUPABASE_SERVICE_KEY, SUPABASE_ANON_KEY, OPENWEATHER_KEY, GOV_MANDI_API_KEY, GEMINI_API_KEY, NODE_ENV, PORT
+5. Animations and polish: hero gradient + morphing blob + tsParticles, animated feature cards, Framer Motion route transitions, Lottie loader for detection, camera shutter animation, bottom nav with morphing icons.
+6. Bilingual support: react-i18next with `en.json` and `hi.json` and language toggle stored in user profile.
+7. Mock/placeholder behavior:
+   - OTP is `0000` (client and server accept it).
+   - If GEMINI_API_KEY is missing, `/api/detect` returns a clear mocked diagnosis and saves it to `disease_reports`.
+   - Weather works only if OPENWEATHER_KEY present.
+   - Mandi returns cached Supabase rows if GOV_MANDI_API_KEY missing.
+
+Deliverables:
+- Full scaffolded repo with `client/` and `server/` folders, run scripts (`npm install` instructions), good README describing Replit secrets, Supabase setup, and TODOs for plugging real API keys.
+- Working UI flows for login → onboarding → dashboard → camera capture → mock detection result → save report.
+- Clear inline TODO comments where to plug Google Gemini and govt mandi API code.
+
+Final single-line instruction for the agent:
+“Scaffold the full-stack FarmConnect repo exactly as described above with functional mock flows (OTP=0000, mock detection when GEMINI key missing), Supabase schema file, README and TODOs, and use Tailwind + Framer Motion + Lottie + tsParticles to make the UI highly animated and farmer-friendly in English and Hindi.”
