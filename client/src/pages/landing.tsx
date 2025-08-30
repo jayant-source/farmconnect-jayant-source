@@ -95,14 +95,12 @@ export default function Landing() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="relative z-10 glass-enhanced rounded-3xl p-8 shadow-2xl border border-white/20">
-              <img 
-                src="/@assets/generated_images/Smart_farming_technology_illustration_038875b2.png"
-                alt="Smart farming technology illustration" 
-                className="rounded-2xl w-full h-auto animate-float"
-                data-testid="hero-illustration"
-              />
-            </div>
+            <img 
+              src="/@assets/generated_images/Smart_farming_technology_illustration_038875b2.png"
+              alt="Smart farming technology illustration" 
+              className="rounded-2xl w-full h-auto animate-float"
+              data-testid="hero-illustration"
+            />
             <motion.div 
               className="absolute -top-4 -right-4 w-24 h-24 bg-accent rounded-full flex items-center justify-center shadow-lg"
               animate={{ y: [0, -10, 0] }}
