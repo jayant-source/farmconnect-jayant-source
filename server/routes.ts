@@ -492,9 +492,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message, context } = req.body;
       
-      // TODO: Integrate with Gemini for real AI responses
-      // For now, provide helpful farming responses based on keywords
-      const response = generateFarmingResponse(message);
+      // Use Gemini API for enhanced disease context if available
+      let response: string;
+      
+      if (context && context.diseaseName) {
+        // Enhanced disease context using Gemini
+        const { askFarmingQuestion } = await import("./services/gemini.js");
+        const diseaseContext = `Disease Analysis Context:
+- Disease: ${context.diseaseName}
+- Severity: ${context.severity}
+- Symptoms: ${context.symptoms?.join ? context.symptoms.join(", ") : context.symptoms}`;
+        
+        try {
+          response = await askFarmingQuestion(message, diseaseContext);
+        } catch (error) {
+          console.error("Gemini API error, falling back to basic response:", error);
+          response = generateFarmingResponse(message);
+        }
+      } else {
+        // General farming questions with Gemini
+        try {
+          const { askFarmingQuestion } = await import("./services/gemini.js");
+          response = await askFarmingQuestion(message);
+        } catch (error) {
+          console.error("Gemini API error, falling back to basic response:", error);
+          response = generateFarmingResponse(message);
+        }
+      }
       
       res.json({
         response,

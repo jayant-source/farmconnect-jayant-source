@@ -202,36 +202,93 @@ export default function CropDetect() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-20 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      <motion.div
+        className="absolute top-40 right-40 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl animate-morphing"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 2, delay: 0.5 }}
+      />
+      
       {/* Header */}
-      <header className="bg-card border-b border-border p-6 flex items-center" data-testid="crop-detect-header">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setLocation("/dashboard")}
-          className="mr-4"
-          data-testid="button-back"
+      <motion.header 
+        className="glass-dark border-b border-border/50 p-6 flex items-center relative z-10" 
+        data-testid="crop-detect-header"
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-xl font-semibold" data-testid="page-title">
-          {t("cropDetect.title")}
-        </h1>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setIsChatOpen(true)}
-          className="ml-4"
-          data-testid="button-open-chat"
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation("/dashboard")}
+            className="mr-6 hover-glow"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+        </motion.div>
+        
+        <div className="flex-1">
+          <motion.h1 
+            className="text-3xl font-bold gradient-text-primary mb-1" 
+            data-testid="page-title"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            {t("cropDetect.title")}
+          </motion.h1>
+          <motion.p 
+            className="text-sm text-muted-foreground"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            AI-powered crop disease detection
+          </motion.p>
+        </div>
+        
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.9 }}
         >
-          <MessageCircle className="h-5 w-5" />
-        </Button>
-      </header>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsChatOpen(true)}
+            className="ml-4 premium-glow border-primary/30 hover:border-primary/50"
+            data-testid="button-open-chat"
+          >
+            <MessageCircle className="h-6 w-6" />
+          </Button>
+        </motion.div>
+      </motion.header>
 
       {/* Camera Interface */}
-      <div className="p-6">
-        <CameraCapture onCapture={handleImageCapture} />
-      </div>
+      <motion.div 
+        className="p-6 relative z-10"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+      >
+        <motion.div
+          className="premium-card rounded-3xl p-8 hover-glow relative overflow-hidden"
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ type: "spring", stiffness: 200 }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-50" />
+          <div className="relative z-10">
+            <CameraCapture onCapture={handleImageCapture} />
+          </div>
+        </motion.div>
+      </motion.div>
 
       {/* Detection Result Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>

@@ -202,19 +202,24 @@ export default function Dashboard() {
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
-              whileHover={{ scale: 1.05, y: -5 }}
+              whileHover={{ scale: 1.08, y: -8, rotateY: 5 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-4 text-center">
-                  <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center mx-auto mb-2`}>
-                    <stat.icon className={`text-lg ${stat.color}`} />
-                  </div>
-                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">{stat.label}</div>
-                </CardContent>
-              </Card>
+              <div className="premium-card rounded-2xl p-6 hover-glow group relative overflow-hidden">
+                <div className={`absolute inset-0 ${stat.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                <div className="relative z-10 text-center">
+                  <motion.div 
+                    className={`w-14 h-14 ${stat.bg} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
+                    whileHover={{ scale: 1.2, rotate: 10 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                  >
+                    <stat.icon className={`text-2xl ${stat.color}`} />
+                  </motion.div>
+                  <div className="text-3xl font-bold gradient-text-primary mb-1">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+                </div>
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -254,34 +259,50 @@ export default function Dashboard() {
                 whileTap={{ scale: 0.97 }}
               >
                 <Link href={action.href}>
-                  <Card className={`group cursor-pointer border-2 ${action.accent} hover:border-primary/30 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden relative`} data-testid={action.testId}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <CardContent className={`p-6 text-center relative ${action.color}`}>
+                  <div className={`premium-card rounded-3xl p-8 hover-glow group cursor-pointer relative overflow-hidden`} data-testid={action.testId}>
+                    {/* Background Gradient */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-50`} />
+                    
+                    <div className="relative z-10 text-center">
                       <motion.div 
-                        className={`w-16 h-16 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 300 }}
+                        className={`w-20 h-20 bg-black/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl group-hover:shadow-primary/25 transition-all duration-300`}
+                        whileHover={{ scale: 1.15, rotate: 10, y: -5 }}
+                        transition={{ type: "spring", stiffness: 400 }}
                       >
-                        <action.icon className={`text-2xl ${action.iconColor}`} />
+                        <action.icon className={`text-3xl ${action.iconColor}`} />
                       </motion.div>
-                      <h3 className="font-bold text-lg text-foreground mb-1 group-hover:text-primary transition-colors">{action.title}</h3>
-                      <p className="text-sm text-muted-foreground group-hover:text-muted-foreground/80">{action.description}</p>
                       
-                      {/* Hover sparkle effect */}
+                      <h3 className="font-bold text-xl text-foreground mb-3 group-hover:gradient-text-primary transition-all duration-300">{action.title}</h3>
+                      <p className="text-sm text-muted-foreground group-hover:text-muted-foreground/90 leading-relaxed">{action.description}</p>
+                      
+                      {/* Premium glow effects */}
                       <motion.div
-                        className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full opacity-0 group-hover:opacity-100"
+                        className="absolute top-4 right-4 w-3 h-3 bg-primary rounded-full opacity-0 group-hover:opacity-100"
+                        animate={{ 
+                          scale: [0, 1.2, 0],
+                          rotate: [0, 180, 360]
+                        }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: Infinity,
+                          delay: index * 0.3
+                        }}
+                      />
+                      
+                      <motion.div
+                        className="absolute bottom-4 left-4 w-2 h-2 bg-accent rounded-full opacity-0 group-hover:opacity-100"
                         animate={{ 
                           scale: [0, 1, 0],
-                          rotate: [0, 180, 360]
+                          opacity: [0, 1, 0]
                         }}
                         transition={{ 
                           duration: 1.5,
                           repeat: Infinity,
-                          delay: index * 0.2
+                          delay: index * 0.4 + 0.5
                         }}
                       />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </Link>
               </motion.div>
             ))}
