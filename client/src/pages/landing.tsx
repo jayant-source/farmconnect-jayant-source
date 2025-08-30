@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
-import { Leaf, Camera, CloudSun, BarChart3, Users } from "lucide-react";
+import { Leaf, Camera, CloudSun, BarChart3, Users, UserCheck, Tractor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LanguageToggle from "@/components/language-toggle";
 
@@ -116,6 +116,55 @@ export default function Landing() {
               transition={{ duration: 6, repeat: Infinity, delay: 2 }}
             >
               <CloudSun className="text-white text-xl" />
+            </motion.div>
+            
+            {/* Animated Farmers */}
+            <motion.div 
+              className="absolute top-1/4 -left-12 w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg z-20"
+              animate={{ 
+                x: [0, 30, 0],
+                rotate: [0, 10, -10, 0] 
+              }}
+              transition={{ 
+                duration: 8, 
+                repeat: Infinity,
+                ease: "easeInOut" 
+              }}
+            >
+              <UserCheck className="text-white text-lg" />
+            </motion.div>
+            
+            <motion.div 
+              className="absolute top-3/4 -right-12 w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg z-20"
+              animate={{ 
+                x: [0, -25, 0],
+                y: [0, -15, 0],
+                rotate: [0, -15, 15, 0] 
+              }}
+              transition={{ 
+                duration: 10, 
+                repeat: Infinity,
+                delay: 1,
+                ease: "easeInOut" 
+              }}
+            >
+              <Tractor className="text-white text-sm" />
+            </motion.div>
+            
+            <motion.div 
+              className="absolute top-1/2 right-1/4 w-12 h-12 bg-green-600 rounded-full flex items-center justify-center shadow-lg z-20"
+              animate={{ 
+                scale: [1, 1.2, 1],
+                y: [0, -20, 0] 
+              }}
+              transition={{ 
+                duration: 7, 
+                repeat: Infinity,
+                delay: 3,
+                ease: "easeInOut" 
+              }}
+            >
+              <Users className="text-white text-xs" />
             </motion.div>
           </motion.div>
         </div>

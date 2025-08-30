@@ -25,6 +25,11 @@ export default function CameraCapture({ onCapture }: CameraCaptureProps) {
 
   const startCamera = useCallback(async () => {
     try {
+      // Check if browser supports getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera not supported in this browser");
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: facingMode,
@@ -35,13 +40,38 @@ export default function CameraCapture({ onCapture }: CameraCaptureProps) {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setIsStreamActive(true);
+        
+        // Wait for video to be ready
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().then(() => {
+            setIsStreamActive(true);
+          }).catch((playError) => {
+            console.error('Error playing video:', playError);
+            toast({
+              title: "Camera Error",
+              description: "Unable to start video playback.",
+              variant: "destructive",
+            });
+          });
+        };
       }
     } catch (error) {
       console.error('Error starting camera:', error);
+      let errorMessage = "Unable to access camera. Please check permissions and try again.";
+      
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          errorMessage = "Camera access denied. Please allow camera permissions and try again.";
+        } else if (error.name === 'NotFoundError') {
+          errorMessage = "No camera found. Please ensure your device has a camera.";
+        } else if (error.name === 'NotSupportedError') {
+          errorMessage = "Camera not supported in this browser.";
+        }
+      }
+      
       toast({
         title: "Camera Error",
-        description: "Unable to access camera. Please check permissions and try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }

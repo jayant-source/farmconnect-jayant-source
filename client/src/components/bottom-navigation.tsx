@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
-import { Home, Camera, Store, Users, User } from "lucide-react";
+import { Home, Camera, Users, User, BarChart3, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
@@ -18,16 +18,16 @@ const navigationItems = [
     testId: "nav-detect",
   },
   {
-    icon: Store,
-    href: "/marketplace",
-    labelKey: "nav.market",
-    testId: "nav-market",
+    icon: BarChart3,
+    href: "/mandi-prices",
+    labelKey: "nav.mandi",
+    testId: "nav-mandi",
   },
   {
-    icon: Users,
-    href: "/community",
-    labelKey: "nav.community",
-    testId: "nav-community",
+    icon: Shield,
+    href: "/government-schemes",
+    labelKey: "nav.schemes",
+    testId: "nav-schemes",
   },
   {
     icon: User,

@@ -65,8 +65,8 @@ const resources = {
       nav: {
         home: "Home",
         detect: "Detect",
-        market: "Market",
-        community: "Community",
+        mandi: "Mandi",
+        schemes: "Schemes",
         profile: "Profile",
       },
       // Crop Detection
@@ -188,8 +188,8 @@ const resources = {
       nav: {
         home: "होम",
         detect: "पहचान",
-        market: "बाजार",
-        community: "समुदाय",
+        mandi: "मंडी",
+        schemes: "योजनाएं",
         profile: "प्रोफाइल",
       },
       // Crop Detection

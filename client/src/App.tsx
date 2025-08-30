@@ -19,6 +19,8 @@ import MandiPrices from "@/pages/mandi-prices";
 import Community from "@/pages/community";
 import Marketplace from "@/pages/marketplace";
 import HelpAssistant from "@/pages/help-assistant";
+import Profile from "@/pages/profile";
+import GovernmentSchemes from "@/pages/government-schemes";
 import NotFound from "@/pages/not-found";
 
 // Components
@@ -110,6 +112,18 @@ function Router() {
         <Route path="/help-assistant">
           <PageWrapper>
             {isAuthenticated ? <HelpAssistant /> : <Auth />}
+          </PageWrapper>
+        </Route>
+        
+        <Route path="/profile">
+          <PageWrapper>
+            {isAuthenticated ? <Profile /> : <Auth />}
+          </PageWrapper>
+        </Route>
+        
+        <Route path="/government-schemes">
+          <PageWrapper>
+            {isAuthenticated ? <GovernmentSchemes /> : <Auth />}
           </PageWrapper>
         </Route>
         
