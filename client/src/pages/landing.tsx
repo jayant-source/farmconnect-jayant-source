@@ -97,7 +97,7 @@ export default function Landing() {
           >
             <div className="relative z-10 glass-enhanced rounded-3xl p-8 shadow-2xl border border-white/20">
               <img 
-                src="/@assets/generated_images/Smart_farming_tech_illustration_b6e0fb69.png"
+                src="/@assets/generated_images/Smart_farming_technology_illustration_038875b2.png"
                 alt="Smart farming technology illustration" 
                 className="rounded-2xl w-full h-auto animate-float"
                 data-testid="hero-illustration"

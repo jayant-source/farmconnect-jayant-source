@@ -267,6 +267,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Weather route with location parameter (for geolocation coordinates)
+  app.get("/api/weather/current/:location", async (req, res) => {
+    try {
+      const location = decodeURIComponent(req.params.location);
+      
+      if (!location) {
+        return res.status(400).json({ message: "Location parameter is required" });
+      }
+      
+      const weatherData = await getCurrentWeather(location);
+      res.json(weatherData);
+    } catch (error) {
+      console.error("Weather error:", error);
+      res.status(500).json({ message: "Failed to fetch weather data" });
+    }
+  });
+
   // Mandi prices routes
   app.get("/api/mandi/prices", async (req, res) => {
     try {
