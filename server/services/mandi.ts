@@ -31,7 +31,6 @@ export async function getMandiPrices(market?: string, date?: string): Promise<Ma
       headers: {
         'User-Agent': 'FarmConnect/1.0',
       },
-      timeout: 10000, // 10 second timeout
     });
 
     if (!response.ok) {
@@ -68,9 +67,8 @@ export async function getMandiPrices(market?: string, date?: string): Promise<Ma
 }
 
 function buildMandiApiUrl(market?: string, date?: string, apiKey?: string): string {
-  // TODO: Replace with actual government mandi API endpoint
-  // This is a placeholder URL structure
-  const baseUrl = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
+  // Using the current daily price API from data.gov.in as specified by the user
+  const baseUrl = "https://api.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi";
   const params = new URLSearchParams({
     'api-key': apiKey || '',
     'format': 'json',

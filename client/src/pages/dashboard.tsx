@@ -13,7 +13,7 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  const { data: recentReports } = useQuery({
+  const { data: recentReports = [] } = useQuery({
     queryKey: ["/api/disease-reports/recent"],
     enabled: !!user,
   });
@@ -112,7 +112,7 @@ export default function Dashboard() {
           {t("dashboard.recentReports")}
         </h2>
         <div className="space-y-3">
-          {recentReports && recentReports.length > 0 ? (
+          {Array.isArray(recentReports) && recentReports.length > 0 ? (
             recentReports.map((report: any) => (
               <Card key={report.id} data-testid={`report-${report.id}`}>
                 <CardContent className="p-4 flex items-center">

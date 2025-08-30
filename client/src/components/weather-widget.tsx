@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { CloudSun, Eye, Wind, Droplets, Thermometer } from "lucide-react";
+import { CloudSun, Eye, Wind, Droplets, Thermometer, MapPin, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 interface WeatherData {
   location: string;
@@ -19,12 +22,77 @@ interface WeatherData {
 export default function WeatherWidget() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<string>(user?.location || "");
 
   const { data: weather, isLoading, error } = useQuery<WeatherData>({
-    queryKey: ["/api/weather/current", user?.location],
-    enabled: !!user?.location,
+    queryKey: ["/api/weather/current", currentLocation],
+    enabled: !!currentLocation,
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Location Error",
+        description: "Geolocation is not supported by this browser.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          // Use reverse geocoding to get location name
+          const locationName = `${latitude},${longitude}`;
+          setCurrentLocation(locationName);
+          setIsGettingLocation(false);
+          toast({
+            title: "Location Updated",
+            description: "Weather data updated for your current location.",
+          });
+        } catch (error) {
+          setIsGettingLocation(false);
+          toast({
+            title: "Location Error",
+            description: "Failed to get your location. Please try again.",
+            variant: "destructive",
+          });
+        }
+      },
+      (error) => {
+        setIsGettingLocation(false);
+        let errorMessage = "Failed to get your location.";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location access denied. Please allow location access and try again.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out.";
+            break;
+        }
+        
+        toast({
+          title: "Location Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // Cache for 5 minutes
+      }
+    );
+  };
 
   if (isLoading) {
     return (
@@ -51,19 +119,39 @@ export default function WeatherWidget() {
     return (
       <Card className="bg-gradient-to-r from-gray-500 to-gray-600" data-testid="weather-error">
         <CardContent className="p-6 text-white">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-lg font-semibold mb-1" data-testid="weather-error-title">
                 Weather Unavailable
               </h3>
               <p className="text-gray-200 text-sm">
-                {user?.location || "Set your location in profile"}
+                {currentLocation || "Location not set"}
               </p>
             </div>
             <div className="text-right">
               <CloudSun className="h-8 w-8 text-gray-300" />
             </div>
           </div>
+          <Button 
+            variant="secondary" 
+            size="sm"
+            onClick={getCurrentLocation}
+            disabled={isGettingLocation}
+            className="w-full"
+            data-testid="button-get-location"
+          >
+            {isGettingLocation ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Getting Location...
+              </>
+            ) : (
+              <>
+                <MapPin className="mr-2 h-4 w-4" />
+                Use Current Location
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
     );
@@ -145,9 +233,25 @@ export default function WeatherWidget() {
             </div>
           )}
 
-          {/* Last updated */}
-          <div className="mt-3 text-xs text-blue-200 text-right" data-testid="weather-updated">
-            Updated {new Date().toLocaleTimeString()}
+          {/* Location and update controls */}
+          <div className="mt-4 flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={getCurrentLocation}
+              disabled={isGettingLocation}
+              className="text-blue-100 hover:text-white hover:bg-white/10"
+              data-testid="button-update-location"
+            >
+              {isGettingLocation ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <MapPin className="h-4 w-4" />
+              )}
+            </Button>
+            <div className="text-xs text-blue-200" data-testid="weather-updated">
+              Updated {new Date().toLocaleTimeString()}
+            </div>
           </div>
         </CardContent>
       </Card>
