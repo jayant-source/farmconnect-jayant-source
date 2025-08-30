@@ -1,0 +1,107 @@
+{
+  "login": "Login",
+  "hero": {
+    "title": "Smart Farming",
+    "subtitle": "Detect crop diseases, check weather, get market prices, and connect with fellow farmers - all in one place.",
+    "getStarted": "Get Started",
+    "watchDemo": "Watch Demo"
+  },
+  "features": {
+    "cropDetection": "Crop Detection",
+    "cropDetectionDesc": "AI-powered disease identification",
+    "weather": "Weather",
+    "weatherDesc": "Real-time weather updates",
+    "mandiPrices": "Mandi Prices",
+    "mandiPricesDesc": "Live market rates",
+    "community": "Community",
+    "communityDesc": "Connect with farmers"
+  },
+  "auth": {
+    "title": "Welcome to FarmConnect",
+    "subtitle": "Enter your phone number to get started",
+    "phoneLabel": "Phone Number",
+    "sendOTP": "Send OTP",
+    "otpSent": "We've sent an OTP to",
+    "otpLabel": "Enter OTP",
+    "verify": "Verify & Continue",
+    "resendOTP": "Resend OTP"
+  },
+  "onboarding": {
+    "title": "Complete Your Profile",
+    "subtitle": "Help us personalize your farming experience",
+    "name": "Full Name",
+    "age": "Age",
+    "location": "Farm Location",
+    "farmSize": "Farm Size (acres)",
+    "crops": "Primary Crops",
+    "language": "Preferred Language",
+    "complete": "Complete Setup"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "quickActions": "Quick Actions",
+    "detectDisease": "Detect Disease",
+    "weather": "Weather",
+    "mandiPrices": "Mandi Prices",
+    "community": "Community",
+    "recentReports": "Recent Disease Reports"
+  },
+  "weather": {
+    "current": "Current Weather"
+  },
+  "nav": {
+    "home": "Home",
+    "detect": "Detect",
+    "market": "Market",
+    "community": "Community",
+    "profile": "Profile"
+  },
+  "cropDetect": {
+    "title": "Crop Disease Detection",
+    "cameraPlaceholder": "Camera feed will appear here",
+    "instructions": "Position the diseased leaf within the frame and capture",
+    "recentCaptures": "Recent Captures"
+  },
+  "detection": {
+    "analyzing": "Analyzing Image...",
+    "symptoms": "Symptoms",
+    "treatment": "Recommended Treatment",
+    "confidence": "Confidence",
+    "saveReport": "Save Report",
+    "share": "Share"
+  },
+  "mandi": {
+    "title": "Mandi Prices",
+    "selectLocation": "Select Market",
+    "selectDate": "Date",
+    "priceAlerts": "Price Alerts",
+    "alertDescription": "Set price alerts for your crops and get notified when prices reach your target.",
+    "setupAlerts": "Setup Alerts"
+  },
+  "community": {
+    "title": "Community",
+    "totalFarmers": "Farmers",
+    "activePosts": "Posts Today",
+    "helpRate": "Help Rate",
+    "share": "Share"
+  },
+  "marketplace": {
+    "title": "Marketplace",
+    "all": "All",
+    "seeds": "Seeds",
+    "fertilizers": "Fertilizers",
+    "tools": "Tools",
+    "produce": "Produce",
+    "contact": "Contact"
+  },
+  "assistant": {
+    "title": "AI Farm Assistant",
+    "name": "FarmBot Assistant",
+    "status": "Online - Ready to help",
+    "quickHelp": "Quick Help",
+    "weatherAdvice": "Weather Advice",
+    "cropCare": "Crop Care",
+    "fertilizer": "Fertilizer Tips",
+    "pestControl": "Pest Control"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "login": "लॉगिन",
+  "hero": {
+    "title": "स्मार्ट फार्मिंग",
+    "subtitle": "फसल की बीमारियों का पता लगाएं, मौसम की जांच करें, बाजार की कीमतें पाएं, और साथी किसानों से जुड़ें - सब एक जगह।",
+    "getStarted": "शुरू करें",
+    "watchDemo": "डेमो देखें"
+  },
+  "features": {
+    "cropDetection": "फसल रोग पहचान",
+    "cropDetectionDesc": "AI द्वारा रोग की पहचान",
+    "weather": "मौसम",
+    "weatherDesc": "वास्तविक समय मौसम अपडेट",
+    "mandiPrices": "मंडी की कीमतें",
+    "mandiPricesDesc": "लाइव बाजार दरें",
+    "community": "समुदाय",
+    "communityDesc": "किसानों से जुड़ें"
+  },
+  "auth": {
+    "title": "FarmConnect में आपका स्वागत है",
+    "subtitle": "शुरू करने के लिए अपना फोन नंबर दर्ज करें",
+    "phoneLabel": "फोन नंबर",
+    "sendOTP": "OTP भेजें",
+    "otpSent": "हमने OTP भेजा है",
+    "otpLabel": "OTP दर्ज करें",
+    "verify": "सत्यापित करें और जारी रखें",
+    "resendOTP": "OTP फिर से भेजें"
+  },
+  "onboarding": {
+    "title": "अपनी प्रोफाइल पूरी करें",
+    "subtitle": "अपने खेती के अनुभव को व्यक्तिगत बनाने में हमारी मदद करें",
+    "name": "पूरा नाम",
+    "age": "उम्र",
+    "location": "खेत का स्थान",
+    "farmSize": "खेत का आकार (एकड़)",
+    "crops": "मुख्य फसलें",
+    "language": "पसंदीदा भाषा",
+    "complete": "सेटअप पूरा करें"
+  },
+  "dashboard": {
+    "welcome": "स्वागत है",
+    "quickActions": "त्वरित कार्य",
+    "detectDisease": "रोग की पहचान",
+    "weather": "मौसम",
+    "mandiPrices": "मंडी की कीमतें",
+    "community": "समुदाय",
+    "recentReports": "हाल की रोग रिपोर्ट"
+  },
+  "weather": {
+    "current": "वर्तमान मौसम"
+  },
+  "nav": {
+    "home": "होम",
+    "detect": "पहचान",
+    "market": "बाजार",
+    "community": "समुदाय",
+    "profile": "प्रोफाइल"
+  },
+  "cropDetect": {
+    "title": "फसल रोग पहचान",
+    "cameraPlaceholder": "कैमरा फीड यहाँ दिखाई देगा",
+    "instructions": "रोगग्रस्त पत्ती को फ्रेम के भीतर रखें और कैप्चर करें",
+    "recentCaptures": "हाल की तस्वीरें"
+  },
+  "detection": {
+    "analyzing": "तस्वीर का विश्लेषण कर रहे हैं...",
+    "symptoms": "लक्षण",
+    "treatment": "सुझावित उपचार",
+    "confidence": "विश्वास",
+    "saveReport": "रिपोर्ट सेव करें",
+    "share": "साझा करें"
+  },
+  "mandi": {
+    "title": "मंडी की कीमतें",
+    "selectLocation": "बाजार चुनें",
+    "selectDate": "दिनांक",
+    "priceAlerts": "कीमत अलर्ट",
+    "alertDescription": "अपनी फसलों के लिए कीमत अलर्ट सेट करें और जब कीमतें आपके लक्ष्य तक पहुंचें तो सूचना पाएं।",
+    "setupAlerts": "अलर्ट सेट करें"
+  },
+  "community": {
+    "title": "समुदाय",
+    "totalFarmers": "किसान",
+    "activePosts": "आज के पोस्ट",
+    "helpRate": "सहायता दर",
+    "share": "साझा करें"
+  },
+  "marketplace": {
+    "title": "बाजार",
+    "all": "सभी",
+    "seeds": "बीज",
+    "fertilizers": "उर्वरक",
+    "tools": "उपकरण",
+    "produce": "उत्पाद",
+    "contact": "संपर्क करें"
+  },
+  "assistant": {
+    "title": "AI कृषि सहायक",
+    "name": "FarmBot सहायक",
+    "status": "ऑनलाइन - सहायता के लिए तैयार",
+    "quickHelp": "त्वरित सहायता",
+    "weatherAdvice": "मौसम सलाह",
+    "cropCare": "फसल देखभाल",
+    "fertilizer": "उर्वरक सुझाव",
+    "pestControl": "कीट नियंत्रण"
+  }
+}
