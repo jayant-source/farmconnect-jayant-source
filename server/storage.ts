@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
-import { eq, desc, count, and, like } from "drizzle-orm";
-import { db } from "./db";
+import { eq, desc, count, and, like, sql } from "drizzle-orm";
+import { getDb } from "./db";
 import { 
   users,
   diseaseReports,
@@ -221,8 +221,16 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const diseaseReport: DiseaseReport = {
       id,
+      userId: report.userId,
+      imagePath: report.imagePath,
+      cropType: report.cropType || null,
+      diseaseName: report.diseaseName,
+      severity: report.severity || null,
+      confidence: report.confidence || null,
+      symptoms: report.symptoms || null,
+      treatment: report.treatment || null,
+      isMockResult: report.isMockResult || null,
       createdAt: new Date(),
-      ...report,
     };
     this.diseaseReports.set(id, diseaseReport);
     return diseaseReport;
@@ -231,7 +239,7 @@ export class MemStorage implements IStorage {
   async getRecentDiseaseReports(userId: string, limit: number): Promise<DiseaseReport[]> {
     const userReports = Array.from(this.diseaseReports.values())
       .filter(report => report.userId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
       .slice(0, limit);
     
     return userReports;
@@ -244,7 +252,7 @@ export class MemStorage implements IStorage {
   // Community methods
   async getCommunityPosts(limit: number = 20): Promise<CommunityPost[]> {
     const posts = Array.from(this.communityPosts.values())
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
       .slice(0, limit);
     
     // Add mock user data for display
@@ -264,13 +272,10 @@ export class MemStorage implements IStorage {
       userId: postData.userId,
       title: postData.title,
       content: postData.content,
-      imageUrl: postData.imageUrl || null,
+      images: postData.images || null,
       likes: 0,
       comments: 0,
-      authorName: postData.authorName || "Anonymous",
-      authorAvatar: postData.authorAvatar || null,
-      location: postData.location || null,
-      tags: postData.tags || [],
+      tags: postData.tags || null,
       createdAt: new Date(),
     };
     
@@ -301,7 +306,7 @@ export class MemStorage implements IStorage {
   async getMarketplaceItems(category?: string): Promise<MarketplaceItem[]> {
     let items = Array.from(this.marketplaceItems.values())
       .filter(item => item.isActive)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
     
     if (category && category !== "all") {
       items = items.filter(item => item.category === category);
@@ -342,9 +347,15 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const alert: PriceAlert = {
       id,
+      userId: insertAlert.userId,
+      market: insertAlert.market,
+      commodity: insertAlert.commodity,
+      priceUnit: insertAlert.priceUnit || null,
+      isActive: insertAlert.isActive || null,
+      targetPrice: insertAlert.targetPrice,
+      alertType: insertAlert.alertType,
       lastTriggered: null,
       createdAt: new Date(),
-      ...insertAlert,
     };
     this.priceAlerts.set(id, alert);
     return alert;
@@ -353,7 +364,7 @@ export class MemStorage implements IStorage {
   async getUserPriceAlerts(userId: string): Promise<PriceAlert[]> {
     return Array.from(this.priceAlerts.values())
       .filter(alert => alert.userId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
   }
 
   async updatePriceAlert(id: string, updates: Partial<PriceAlert>): Promise<PriceAlert> {
@@ -381,6 +392,7 @@ class PostgresStorage implements IStorage {
   // User methods
   async getUser(id: string): Promise<User | undefined> {
     try {
+      const db = getDb();
       const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
       return result[0];
     } catch (error) {
@@ -391,6 +403,7 @@ class PostgresStorage implements IStorage {
 
   async getUserByPhone(phone: string): Promise<User | undefined> {
     try {
+      const db = getDb();
       const result = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
       return result[0];
     } catch (error) {
@@ -401,6 +414,7 @@ class PostgresStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
+      const db = getDb();
       const result = await db.insert(users).values(insertUser).returning();
       return result[0];
     } catch (error) {
@@ -411,6 +425,7 @@ class PostgresStorage implements IStorage {
 
   async updateUser(id: string, updates: Partial<User>): Promise<User> {
     try {
+      const db = getDb();
       const result = await db.update(users).set(updates).where(eq(users.id, id)).returning();
       if (!result[0]) {
         throw new Error("User not found");
@@ -425,6 +440,7 @@ class PostgresStorage implements IStorage {
   // Disease report methods
   async createDiseaseReport(report: InsertDiseaseReport): Promise<DiseaseReport> {
     try {
+      const db = getDb();
       const result = await db.insert(diseaseReports).values(report).returning();
       return result[0];
     } catch (error) {
@@ -435,6 +451,7 @@ class PostgresStorage implements IStorage {
 
   async getRecentDiseaseReports(userId: string, limit: number): Promise<DiseaseReport[]> {
     try {
+      const db = getDb();
       const result = await db
         .select()
         .from(diseaseReports)
@@ -450,6 +467,7 @@ class PostgresStorage implements IStorage {
 
   async getDiseaseReport(id: string): Promise<DiseaseReport | undefined> {
     try {
+      const db = getDb();
       const result = await db.select().from(diseaseReports).where(eq(diseaseReports.id, id)).limit(1);
       return result[0];
     } catch (error) {
@@ -461,6 +479,7 @@ class PostgresStorage implements IStorage {
   // Community methods
   async getCommunityPosts(limit: number = 20): Promise<CommunityPost[]> {
     try {
+      const db = getDb();
       const result = await db
         .select()
         .from(communityPosts)
@@ -475,17 +494,15 @@ class PostgresStorage implements IStorage {
 
   async createCommunityPost(postData: any): Promise<CommunityPost> {
     try {
+      const db = getDb();
       const [post] = await db
         .insert(communityPosts)
         .values({
           userId: postData.userId,
           title: postData.title,
           content: postData.content,
-          imageUrl: postData.imageUrl || null,
-          authorName: postData.authorName || "Anonymous",
-          authorAvatar: postData.authorAvatar || null,
-          location: postData.location || null,
-          tags: postData.tags || [],
+          images: postData.images || null,
+          tags: postData.tags || null,
         })
         .returning();
       return post;
@@ -497,6 +514,7 @@ class PostgresStorage implements IStorage {
 
   async likeCommunityPost(postId: string, userId: string): Promise<void> {
     try {
+      const db = getDb();
       await db
         .update(communityPosts)
         .set({ likes: sql`${communityPosts.likes} + 1` })
@@ -513,6 +531,7 @@ class PostgresStorage implements IStorage {
     helpRate: string;
   }> {
     try {
+      const db = getDb();
       const [farmerCount, postCount] = await Promise.all([
         db.select({ count: count() }).from(users),
         db.select({ count: count() }).from(communityPosts)
@@ -536,6 +555,7 @@ class PostgresStorage implements IStorage {
   // Marketplace methods
   async getMarketplaceItems(category?: string): Promise<MarketplaceItem[]> {
     try {
+      const db = getDb();
       let query = db.select().from(marketplaceItems).where(eq(marketplaceItems.isActive, true));
       
       if (category && category !== "all") {
@@ -553,6 +573,7 @@ class PostgresStorage implements IStorage {
   // Mandi prices methods
   async getMandiPrices(market?: string, date?: string): Promise<MandiPrice[]> {
     try {
+      const db = getDb();
       let query = db.select().from(mandiPrices);
       const conditions = [];
       
@@ -579,6 +600,7 @@ class PostgresStorage implements IStorage {
 
   async saveMandiPrices(prices: MandiPrice[]): Promise<void> {
     try {
+      const db = getDb();
       if (prices.length > 0) {
         await db.insert(mandiPrices).values(prices);
       }
@@ -590,6 +612,7 @@ class PostgresStorage implements IStorage {
   // Price alerts methods
   async createPriceAlert(insertAlert: InsertPriceAlert): Promise<PriceAlert> {
     try {
+      const db = getDb();
       const result = await db.insert(priceAlerts).values(insertAlert).returning();
       return result[0];
     } catch (error) {
@@ -600,6 +623,7 @@ class PostgresStorage implements IStorage {
 
   async getUserPriceAlerts(userId: string): Promise<PriceAlert[]> {
     try {
+      const db = getDb();
       const result = await db
         .select()
         .from(priceAlerts)
@@ -614,6 +638,7 @@ class PostgresStorage implements IStorage {
 
   async updatePriceAlert(id: string, updates: Partial<PriceAlert>): Promise<PriceAlert> {
     try {
+      const db = getDb();
       const result = await db.update(priceAlerts).set(updates).where(eq(priceAlerts.id, id)).returning();
       if (!result[0]) {
         throw new Error("Price alert not found");
@@ -627,6 +652,7 @@ class PostgresStorage implements IStorage {
 
   async deletePriceAlert(id: string): Promise<void> {
     try {
+      const db = getDb();
       await db.delete(priceAlerts).where(eq(priceAlerts.id, id));
     } catch (error) {
       console.error("Error deleting price alert:", error);
@@ -636,6 +662,7 @@ class PostgresStorage implements IStorage {
 
   async getActivePriceAlerts(): Promise<PriceAlert[]> {
     try {
+      const db = getDb();
       const result = await db
         .select()
         .from(priceAlerts)
