@@ -50,7 +50,9 @@ export default function Landing() {
         </div>
         
         <div className="flex items-center space-x-4">
-          <LanguageToggle />
+          <div className="bg-white/20 backdrop-blur-md rounded-xl p-2 border border-white/30">
+            <LanguageToggle />
+          </div>
           <Link href="/auth">
             <Button variant="secondary" data-testid="button-login">
               {t("login")}
@@ -83,9 +85,6 @@ export default function Landing() {
                   {t("hero.getStarted")}
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="glass-morphism hover:bg-white/30 font-semibold text-lg border-white/30 text-white" data-testid="button-watch-demo">
-                {t("hero.watchDemo")}
-              </Button>
             </div>
           </motion.div>
 

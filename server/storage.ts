@@ -473,5 +473,114 @@ class PostgresStorage implements IStorage {
   }
 }
 
-// Try to use PostgreSQL, fallback to in-memory if database is not available
-export const storage = process.env.DATABASE_URL ? new PostgresStorage() : new MemStorage();
+// Create a hybrid storage that falls back to in-memory when database fails
+class HybridStorage implements IStorage {
+  private postgres: PostgresStorage;
+  private memory: MemStorage;
+  private useDatabase: boolean = true;
+
+  constructor() {
+    this.postgres = new PostgresStorage();
+    this.memory = new MemStorage();
+  }
+
+  private async safeDbOperation<T>(operation: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
+    if (!this.useDatabase) {
+      return fallback();
+    }
+
+    try {
+      return await operation();
+    } catch (error) {
+      console.warn("Database operation failed, falling back to in-memory storage:", error);
+      this.useDatabase = false; // Disable database for this session
+      return fallback();
+    }
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    return this.safeDbOperation(
+      () => this.postgres.getUser(id),
+      () => this.memory.getUser(id)
+    );
+  }
+
+  async getUserByPhone(phone: string): Promise<User | undefined> {
+    return this.safeDbOperation(
+      () => this.postgres.getUserByPhone(phone),
+      () => this.memory.getUserByPhone(phone)
+    );
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    return this.safeDbOperation(
+      () => this.postgres.createUser(insertUser),
+      () => this.memory.createUser(insertUser)
+    );
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    return this.safeDbOperation(
+      () => this.postgres.updateUser(id, updates),
+      () => this.memory.updateUser(id, updates)
+    );
+  }
+
+  async createDiseaseReport(report: InsertDiseaseReport): Promise<DiseaseReport> {
+    return this.safeDbOperation(
+      () => this.postgres.createDiseaseReport(report),
+      () => this.memory.createDiseaseReport(report)
+    );
+  }
+
+  async getRecentDiseaseReports(userId: string, limit: number): Promise<DiseaseReport[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getRecentDiseaseReports(userId, limit),
+      () => this.memory.getRecentDiseaseReports(userId, limit)
+    );
+  }
+
+  async getDiseaseReport(id: string): Promise<DiseaseReport | undefined> {
+    return this.safeDbOperation(
+      () => this.postgres.getDiseaseReport(id),
+      () => this.memory.getDiseaseReport(id)
+    );
+  }
+
+  async getCommunityPosts(limit: number = 20): Promise<CommunityPost[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getCommunityPosts(limit),
+      () => this.memory.getCommunityPosts(limit)
+    );
+  }
+
+  async getCommunityStats(): Promise<{ totalFarmers: string; activePosts: string; helpRate: string; }> {
+    return this.safeDbOperation(
+      () => this.postgres.getCommunityStats(),
+      () => this.memory.getCommunityStats()
+    );
+  }
+
+  async getMarketplaceItems(category?: string): Promise<MarketplaceItem[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getMarketplaceItems(category),
+      () => this.memory.getMarketplaceItems(category)
+    );
+  }
+
+  async getMandiPrices(market?: string, date?: string): Promise<MandiPrice[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getMandiPrices(market, date),
+      () => this.memory.getMandiPrices(market, date)
+    );
+  }
+
+  async saveMandiPrices(prices: MandiPrice[]): Promise<void> {
+    return this.safeDbOperation(
+      () => this.postgres.saveMandiPrices(prices),
+      () => this.memory.saveMandiPrices(prices)
+    );
+  }
+}
+
+export const storage = new HybridStorage();

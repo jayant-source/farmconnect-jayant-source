@@ -46,7 +46,7 @@ export default function LanguageToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild data-testid="language-toggle">
-        <Button variant="outline" size="sm" className="glass-morphism border-white/30 text-white hover:bg-white/30">
+        <Button variant="outline" size="lg" className="bg-white/20 backdrop-blur-md border-2 border-white/40 text-white hover:bg-white/30 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-lg">
           <motion.div
             className="flex items-center space-x-2"
             whileHover={{ scale: 1.05 }}
