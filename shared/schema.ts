@@ -82,6 +82,19 @@ export const weatherCache = pgTable("weather_cache", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const priceAlerts = pgTable("price_alerts", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id),
+  commodity: text("commodity").notNull(),
+  market: text("market").notNull(),
+  targetPrice: decimal("target_price", { precision: 10, scale: 2 }).notNull(),
+  priceUnit: text("price_unit").default("per quintal"),
+  alertType: text("alert_type").notNull(), // 'above', 'below'
+  isActive: boolean("is_active").default(true),
+  lastTriggered: timestamp("last_triggered"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -110,6 +123,12 @@ export const insertMarketplaceItemSchema = createInsertSchema(marketplaceItems).
   createdAt: true,
 });
 
+export const insertPriceAlertSchema = createInsertSchema(priceAlerts).omit({
+  id: true,
+  createdAt: true,
+  lastTriggered: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -121,4 +140,6 @@ export type CommunityPost = typeof communityPosts.$inferSelect;
 export type InsertCommunityPost = z.infer<typeof insertCommunityPostSchema>;
 export type MarketplaceItem = typeof marketplaceItems.$inferSelect;
 export type InsertMarketplaceItem = z.infer<typeof insertMarketplaceItemSchema>;
+export type PriceAlert = typeof priceAlerts.$inferSelect;
+export type InsertPriceAlert = z.infer<typeof insertPriceAlertSchema>;
 export type WeatherCache = typeof weatherCache.$inferSelect;

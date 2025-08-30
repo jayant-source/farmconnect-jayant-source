@@ -7,13 +7,16 @@ import {
   communityPosts,
   marketplaceItems,
   mandiPrices,
+  priceAlerts,
   type User, 
   type InsertUser, 
   type DiseaseReport, 
   type InsertDiseaseReport, 
   type CommunityPost, 
   type MarketplaceItem, 
-  type MandiPrice 
+  type MandiPrice,
+  type PriceAlert,
+  type InsertPriceAlert
 } from "@shared/schema";
 
 // Enhanced interface with FarmConnect specific methods
@@ -45,6 +48,13 @@ export interface IStorage {
   // Mandi prices methods
   getMandiPrices(market?: string, date?: string): Promise<MandiPrice[]>;
   saveMandiPrices(prices: MandiPrice[]): Promise<void>;
+  
+  // Price alerts methods
+  createPriceAlert(alert: InsertPriceAlert): Promise<PriceAlert>;
+  getUserPriceAlerts(userId: string): Promise<PriceAlert[]>;
+  updatePriceAlert(id: string, updates: Partial<PriceAlert>): Promise<PriceAlert>;
+  deletePriceAlert(id: string): Promise<void>;
+  getActivePriceAlerts(): Promise<PriceAlert[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -53,6 +63,7 @@ export class MemStorage implements IStorage {
   private communityPosts: Map<string, CommunityPost>;
   private marketplaceItems: Map<string, MarketplaceItem>;
   private mandiPrices: Map<string, MandiPrice>;
+  private priceAlerts: Map<string, PriceAlert>;
 
   constructor() {
     this.users = new Map();
@@ -60,6 +71,7 @@ export class MemStorage implements IStorage {
     this.communityPosts = new Map();
     this.marketplaceItems = new Map();
     this.mandiPrices = new Map();
+    this.priceAlerts = new Map();
     
     // Initialize with some sample data
     this.initializeSampleData();
@@ -324,6 +336,45 @@ export class MemStorage implements IStorage {
       this.mandiPrices.set(price.id, price);
     });
   }
+
+  // Price alerts methods
+  async createPriceAlert(insertAlert: InsertPriceAlert): Promise<PriceAlert> {
+    const id = randomUUID();
+    const alert: PriceAlert = {
+      id,
+      lastTriggered: null,
+      createdAt: new Date(),
+      ...insertAlert,
+    };
+    this.priceAlerts.set(id, alert);
+    return alert;
+  }
+
+  async getUserPriceAlerts(userId: string): Promise<PriceAlert[]> {
+    return Array.from(this.priceAlerts.values())
+      .filter(alert => alert.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async updatePriceAlert(id: string, updates: Partial<PriceAlert>): Promise<PriceAlert> {
+    const alert = this.priceAlerts.get(id);
+    if (!alert) {
+      throw new Error("Price alert not found");
+    }
+    
+    const updatedAlert = { ...alert, ...updates };
+    this.priceAlerts.set(id, updatedAlert);
+    return updatedAlert;
+  }
+
+  async deletePriceAlert(id: string): Promise<void> {
+    this.priceAlerts.delete(id);
+  }
+
+  async getActivePriceAlerts(): Promise<PriceAlert[]> {
+    return Array.from(this.priceAlerts.values())
+      .filter(alert => alert.isActive);
+  }
 }
 
 class PostgresStorage implements IStorage {
@@ -535,6 +586,67 @@ class PostgresStorage implements IStorage {
       console.error("Error saving mandi prices:", error);
     }
   }
+
+  // Price alerts methods
+  async createPriceAlert(insertAlert: InsertPriceAlert): Promise<PriceAlert> {
+    try {
+      const result = await db.insert(priceAlerts).values(insertAlert).returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error creating price alert:", error);
+      throw error;
+    }
+  }
+
+  async getUserPriceAlerts(userId: string): Promise<PriceAlert[]> {
+    try {
+      const result = await db
+        .select()
+        .from(priceAlerts)
+        .where(eq(priceAlerts.userId, userId))
+        .orderBy(desc(priceAlerts.createdAt));
+      return result;
+    } catch (error) {
+      console.error("Error getting user price alerts:", error);
+      return [];
+    }
+  }
+
+  async updatePriceAlert(id: string, updates: Partial<PriceAlert>): Promise<PriceAlert> {
+    try {
+      const result = await db.update(priceAlerts).set(updates).where(eq(priceAlerts.id, id)).returning();
+      if (!result[0]) {
+        throw new Error("Price alert not found");
+      }
+      return result[0];
+    } catch (error) {
+      console.error("Error updating price alert:", error);
+      throw error;
+    }
+  }
+
+  async deletePriceAlert(id: string): Promise<void> {
+    try {
+      await db.delete(priceAlerts).where(eq(priceAlerts.id, id));
+    } catch (error) {
+      console.error("Error deleting price alert:", error);
+      throw error;
+    }
+  }
+
+  async getActivePriceAlerts(): Promise<PriceAlert[]> {
+    try {
+      const result = await db
+        .select()
+        .from(priceAlerts)
+        .where(eq(priceAlerts.isActive, true))
+        .orderBy(desc(priceAlerts.createdAt));
+      return result;
+    } catch (error) {
+      console.error("Error getting active price alerts:", error);
+      return [];
+    }
+  }
 }
 
 // Create a hybrid storage that falls back to in-memory when database fails
@@ -643,6 +755,41 @@ class HybridStorage implements IStorage {
     return this.safeDbOperation(
       () => this.postgres.saveMandiPrices(prices),
       () => this.memory.saveMandiPrices(prices)
+    );
+  }
+
+  async createPriceAlert(insertAlert: InsertPriceAlert): Promise<PriceAlert> {
+    return this.safeDbOperation(
+      () => this.postgres.createPriceAlert(insertAlert),
+      () => this.memory.createPriceAlert(insertAlert)
+    );
+  }
+
+  async getUserPriceAlerts(userId: string): Promise<PriceAlert[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getUserPriceAlerts(userId),
+      () => this.memory.getUserPriceAlerts(userId)
+    );
+  }
+
+  async updatePriceAlert(id: string, updates: Partial<PriceAlert>): Promise<PriceAlert> {
+    return this.safeDbOperation(
+      () => this.postgres.updatePriceAlert(id, updates),
+      () => this.memory.updatePriceAlert(id, updates)
+    );
+  }
+
+  async deletePriceAlert(id: string): Promise<void> {
+    return this.safeDbOperation(
+      () => this.postgres.deletePriceAlert(id),
+      () => this.memory.deletePriceAlert(id)
+    );
+  }
+
+  async getActivePriceAlerts(): Promise<PriceAlert[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getActivePriceAlerts(),
+      () => this.memory.getActivePriceAlerts()
     );
   }
 }

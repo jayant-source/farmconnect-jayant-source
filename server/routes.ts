@@ -9,6 +9,7 @@ import { analyzeImage } from "./services/gemini";
 import { getCurrentWeather } from "./services/weather";
 import { getMandiPrices } from "./services/mandi";
 import { saveImageLocally } from "./services/fileUpload";
+import { sendOTP, verifyOTP, isValidPhoneNumber } from "./services/twilio";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -48,6 +49,16 @@ const chatMessageSchema = z.object({
   }),
 });
 
+const createPriceAlertSchema = z.object({
+  body: z.object({
+    commodity: z.string().min(1, "Commodity is required"),
+    market: z.string().min(1, "Market is required"),
+    targetPrice: z.number().positive("Target price must be positive"),
+    priceUnit: z.string().optional(),
+    alertType: z.enum(["above", "below"], { required_error: "Alert type must be 'above' or 'below'" }),
+  }),
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session middleware
   app.use(session({
@@ -68,8 +79,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { phone } = req.body;
       
-      // TODO: In production, integrate with SMS service
-      // For now, we'll accept any phone number and return success
+      // Validate phone number format
+      if (!isValidPhoneNumber(phone)) {
+        return res.status(400).json({ 
+          message: "Please enter a valid phone number with country code (e.g., +1234567890)" 
+        });
+      }
+      
+      // Send OTP via Twilio
+      const result = await sendOTP(phone);
+      
+      if (!result.success) {
+        return res.status(500).json({ 
+          message: result.error || "Failed to send OTP" 
+        });
+      }
       
       // Store the phone in session for verification
       req.session.phone = phone;
@@ -78,7 +102,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         message: "OTP sent successfully",
-        // In demo mode, always show that OTP was sent
         phone: phone 
       });
     } catch (error) {
@@ -96,9 +119,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid request. Please request OTP first." });
       }
       
-      // For demo purposes, accept OTP "0000"
-      if (otp !== "0000") {
-        return res.status(400).json({ message: "Invalid OTP. Use 0000 for demo." });
+      // Verify OTP using Twilio service
+      const isValidOTP = verifyOTP(phone, otp);
+      
+      if (!isValidOTP) {
+        return res.status(400).json({ message: "Invalid or expired OTP. Please try again." });
       }
       
       // Check if user exists
@@ -116,6 +141,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set user session
       req.session.userId = user.id;
       req.session.authenticated = true;
+      
+      // Clear OTP session data
+      req.session.phone = undefined;
+      req.session.otpSent = undefined;
       
       res.json({
         success: true,
@@ -418,6 +447,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Assistant chat error:", error);
       res.status(500).json({ message: "Assistant is temporarily unavailable" });
+    }
+  });
+
+  // Price Alerts routes
+  app.post("/api/price-alerts", validateRequest(createPriceAlertSchema), async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const alertData = {
+        ...req.body,
+        userId: req.session.userId,
+      };
+
+      const alert = await storage.createPriceAlert(alertData);
+      res.json({ alert, message: "Price alert created successfully" });
+    } catch (error) {
+      console.error("Create price alert error:", error);
+      res.status(500).json({ message: "Failed to create price alert" });
+    }
+  });
+
+  app.get("/api/price-alerts", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const alerts = await storage.getUserPriceAlerts(req.session.userId);
+      res.json(alerts);
+    } catch (error) {
+      console.error("Get price alerts error:", error);
+      res.status(500).json({ message: "Failed to fetch price alerts" });
+    }
+  });
+
+  app.put("/api/price-alerts/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { id } = req.params;
+      const updates = req.body;
+
+      const alert = await storage.updatePriceAlert(id, updates);
+      res.json({ alert, message: "Price alert updated successfully" });
+    } catch (error) {
+      console.error("Update price alert error:", error);
+      res.status(500).json({ message: "Failed to update price alert" });
+    }
+  });
+
+  app.delete("/api/price-alerts/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { id } = req.params;
+      await storage.deletePriceAlert(id);
+      res.json({ message: "Price alert deleted successfully" });
+    } catch (error) {
+      console.error("Delete price alert error:", error);
+      res.status(500).json({ message: "Failed to delete price alert" });
     }
   });
 

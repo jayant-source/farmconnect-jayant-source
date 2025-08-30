@@ -305,17 +305,29 @@ export default function Auth() {
 
             {authStep === "profile" && (
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
                 className="space-y-6"
                 data-testid="profile-step"
               >
                 <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <motion.div 
+                    className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl"
+                    animate={{ 
+                      scale: [1, 1.1, 1],
+                      rotateY: [0, 180, 360]
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
                     <User className="text-white text-2xl" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">Complete Your Profile</h3>
-                  <p className="text-muted-foreground">Tell us about yourself and your farming activities</p>
+                  </motion.div>
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-2">Complete Your Profile</h3>
+                  <p className="text-muted-foreground">Help us personalize your farming experience</p>
                 </div>
 
                 <form onSubmit={handleProfileSubmit} className="space-y-4">

@@ -252,14 +252,29 @@ export default function GovernmentSchemes() {
                     </div>
                   </div>
                   
-                  <Button 
-                    className="w-full mt-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md hover:shadow-lg transition-all duration-300"
-                    onClick={() => window.open(scheme.applyLink, '_blank')}
-                    data-testid={`button-apply-${scheme.id}`}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Apply Now
-                  </Button>
+                    <Button 
+                      className="w-full mt-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md hover:shadow-lg transition-all duration-300 font-semibold"
+                      onClick={() => {
+                        // Show a confirmation toast before redirect
+                        window.open(scheme.applyLink, '_blank');
+                      }}
+                      data-testid={`button-apply-${scheme.id}`}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Apply on Official Website
+                      <motion.div
+                        className="ml-2"
+                        animate={{ x: [0, 3, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        →
+                      </motion.div>
+                    </Button>
+                  </motion.div>
                 </CardContent>
               </Card>
             </motion.div>

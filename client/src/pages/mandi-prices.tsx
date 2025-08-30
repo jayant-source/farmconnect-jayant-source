@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import PriceAlertsDialog from "@/components/price-alerts-dialog";
 
 interface MandiPrice {
   id: string;
@@ -447,9 +448,7 @@ export default function MandiPrices() {
               <p className="text-muted-foreground text-sm mb-4" data-testid="price-alerts-description">
                 Get notified when crop prices reach your target in nearby mandis.
               </p>
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/90" data-testid="button-setup-alerts">
-                Setup Price Alerts
-              </Button>
+              <PriceAlertsDialog />
             </CardContent>
           </Card>
 

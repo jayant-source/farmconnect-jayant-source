@@ -22,6 +22,7 @@ import Marketplace from "@/pages/marketplace";
 import HelpAssistant from "@/pages/help-assistant";
 import Profile from "@/pages/profile";
 import GovernmentSchemes from "@/pages/government-schemes";
+import AIAssistant from "@/pages/ai-assistant";
 import NotFound from "@/pages/not-found";
 
 // Components
@@ -131,6 +132,12 @@ function Router() {
         <Route path="/government-schemes">
           <PageWrapper>
             {isAuthenticated ? <GovernmentSchemes /> : <Auth />}
+          </PageWrapper>
+        </Route>
+        
+        <Route path="/ai-assistant">
+          <PageWrapper>
+            {isAuthenticated ? <AIAssistant /> : <Auth />}
           </PageWrapper>
         </Route>
         

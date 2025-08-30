@@ -68,6 +68,7 @@ const resources = {
         mandi: "Mandi",
         schemes: "Schemes",
         profile: "Profile",
+        ai: "AI Assistant",
       },
       // Crop Detection
       cropDetect: {
@@ -191,6 +192,7 @@ const resources = {
         mandi: "मंडी",
         schemes: "योजनाएं",
         profile: "प्रोफाइल",
+        ai: "AI सहायक",
       },
       // Crop Detection
       cropDetect: {
