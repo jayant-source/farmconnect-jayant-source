@@ -5,7 +5,7 @@ import { useLocation } from "wouter";
 import { ArrowLeft, Camera, Zap, RotateCcw, Save, Share, MessageCircle, Send, Bot, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -235,7 +235,19 @@ export default function CropDetect() {
 
       {/* Detection Result Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-md max-h-[80vh] flex flex-col" data-testid="detection-modal">
+        <DialogContent className="max-w-md max-h-[85vh] flex flex-col p-0" data-testid="detection-modal">
+          <DialogHeader className="sr-only">
+            <DialogTitle>
+              {!detectionResult ? "Crop Analysis in Progress" : "Crop Analysis Results"}
+            </DialogTitle>
+            <DialogDescription>
+              {!detectionResult 
+                ? "Please wait while we analyze your crop image using AI technology." 
+                : "View the detailed analysis results for your crop image including disease detection and treatment recommendations."
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
           {!detectionResult ? (
             // Analysis in progress
             <div className="p-6">
@@ -259,13 +271,17 @@ export default function CropDetect() {
             </div>
           ) : (
             // Detection Result with ScrollArea
-            <ScrollArea className="flex-1 max-h-[70vh]">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-6"
-                data-testid="detection-result"
-              >
+            <>
+              <div className="p-6 pb-0">
+                <h2 className="text-xl font-semibold mb-2">Analysis Results</h2>
+              </div>
+              <ScrollArea className="flex-1 overflow-auto h-[60vh]">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-6 pt-2"
+                  data-testid="detection-result"
+                >
                 {/* Uploaded Image - First */}
                 {capturedImage && (
                   <div className="mb-6">
@@ -383,6 +399,7 @@ export default function CropDetect() {
                 </div>
               </motion.div>
             </ScrollArea>
+            </>
           )}
         </DialogContent>
       </Dialog>
@@ -390,6 +407,13 @@ export default function CropDetect() {
       {/* AI Chat Interface */}
       <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
         <DialogContent className="max-w-md h-[600px] flex flex-col" data-testid="chat-modal">
+          <DialogHeader className="sr-only">
+            <DialogTitle>AI Farming Assistant Chat</DialogTitle>
+            <DialogDescription>
+              Chat with our AI assistant to get answers about farming, crop diseases, and agricultural practices.
+            </DialogDescription>
+          </DialogHeader>
+          
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center space-x-2">
               <Bot className="h-5 w-5 text-primary" />
