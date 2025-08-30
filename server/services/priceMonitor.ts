@@ -1,7 +1,12 @@
 import { storage } from "../storage";
 import { getMandiPrices } from "./mandi";
-import { sendOTP } from "./twilio"; // We'll reuse the SMS functionality
 import type { PriceAlert, MandiPrice } from "@shared/schema";
+
+// Demo SMS function
+function sendDemoSMS(phoneNumber: string, message: string): Promise<void> {
+  console.log(`Demo SMS Alert to ${phoneNumber}: ${message}`);
+  return Promise.resolve();
+}
 
 // Check price alerts every 30 minutes
 const PRICE_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes
@@ -213,38 +218,8 @@ export class PriceMonitorService {
   }
 
   private async sendSMSAlert(phoneNumber: string, message: string): Promise<void> {
-    // Reuse the Twilio SMS functionality from the OTP service
-    // We'll create a separate function for sending custom messages
-    await this.sendCustomSMS(phoneNumber, message);
-  }
-
-  private async sendCustomSMS(phoneNumber: string, message: string): Promise<void> {
-    try {
-      // Check if Twilio credentials are available
-      if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
-        console.log('Twilio credentials not found, simulating SMS send');
-        console.log(`SMS to ${phoneNumber}: ${message}`);
-        return;
-      }
-
-      const twilio = require('twilio');
-      const client = twilio(
-        process.env.TWILIO_ACCOUNT_SID,
-        process.env.TWILIO_AUTH_TOKEN
-      );
-
-      await client.messages.create({
-        body: message,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: phoneNumber
-      });
-
-      console.log(`SMS sent successfully to ${phoneNumber}`);
-    } catch (error) {
-      console.error('Error sending SMS:', error);
-      // Log but don't throw - we don't want to break the alert system if SMS fails
-      console.log(`Simulated SMS to ${phoneNumber}: ${message}`);
-    }
+    // Use demo SMS system
+    await sendDemoSMS(phoneNumber, message);
   }
 }
 

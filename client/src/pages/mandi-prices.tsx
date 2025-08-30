@@ -183,9 +183,27 @@ export default function MandiPrices() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 pb-20 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <motion.div 
+        className="absolute inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2 }}
+      >
+        <motion.div className="absolute top-32 right-20 w-72 h-72 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-3xl" animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 4, repeat: Infinity }} />
+        <motion.div className="absolute bottom-32 left-16 w-64 h-64 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl" animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity, delay: 1.5 }} />
+        <motion.div className="absolute top-1/3 left-1/4 w-40 h-40 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full blur-2xl" animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 5, repeat: Infinity, delay: 3 }} />
+      </motion.div>
+
       {/* Header */}
-      <header className="bg-card border-b border-border p-6 flex items-center" data-testid="mandi-prices-header">
+      <motion.header 
+        className="bg-gradient-to-r from-primary/5 via-primary/10 to-accent/5 border-b border-border/50 backdrop-blur-sm p-6 flex items-center relative z-10" 
+        data-testid="mandi-prices-header"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
         <Button
           variant="ghost"
           size="icon"
@@ -198,7 +216,7 @@ export default function MandiPrices() {
         <h1 className="text-xl font-semibold" data-testid="page-title">
           {t("mandi.title", "Mandi Prices")}
         </h1>
-      </header>
+      </motion.header>
 
       <div className="p-6 space-y-6">
         {/* Enhanced Filters */}

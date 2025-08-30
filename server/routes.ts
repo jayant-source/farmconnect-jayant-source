@@ -9,7 +9,23 @@ import { analyzeImage } from "./services/gemini";
 import { getCurrentWeather } from "./services/weather";
 import { getMandiPrices } from "./services/mandi";
 import { saveImageLocally } from "./services/fileUpload";
-import { sendOTP, verifyOTP, isValidPhoneNumber } from "./services/twilio";
+// Demo OTP system - always accepts "0000" as valid OTP
+function isValidPhoneNumber(phone: string): boolean {
+  // Basic phone validation - should have digits and optional country code
+  const phoneRegex = /^[+]?[1-9]\d{1,14}$/;
+  return phoneRegex.test(phone.replace(/[\s()-]/g, ''));
+}
+
+function sendDemoOTP(phone: string): { success: boolean; error?: string } {
+  // Demo mode - always successful
+  console.log(`Demo OTP sent to ${phone}: 0000`);
+  return { success: true };
+}
+
+function verifyDemoOTP(phone: string, otp: string): boolean {
+  // Demo mode - only accept "0000" as valid OTP
+  return otp === "0000";
+}
 
 // Configure multer for file uploads
 const upload = multer({
@@ -86,8 +102,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Send OTP via Twilio
-      const result = await sendOTP(phone);
+      // Send OTP via demo system
+      const result = sendDemoOTP(phone);
       
       if (!result.success) {
         return res.status(500).json({ 
@@ -119,8 +135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid request. Please request OTP first." });
       }
       
-      // Verify OTP using Twilio service
-      const isValidOTP = verifyOTP(phone, otp);
+      // Verify OTP using demo system
+      const isValidOTP = verifyDemoOTP(phone, otp);
       
       if (!isValidOTP) {
         return res.status(400).json({ message: "Invalid or expired OTP. Please try again." });

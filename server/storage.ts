@@ -730,6 +730,20 @@ class HybridStorage implements IStorage {
     );
   }
 
+  async createCommunityPost(postData: any): Promise<CommunityPost> {
+    return this.safeDbOperation(
+      () => this.postgres.createCommunityPost(postData),
+      () => this.memory.createCommunityPost(postData)
+    );
+  }
+
+  async likeCommunityPost(postId: string, userId: string): Promise<void> {
+    return this.safeDbOperation(
+      () => this.postgres.likeCommunityPost(postId, userId),
+      () => this.memory.likeCommunityPost(postId, userId)
+    );
+  }
+
   async getCommunityStats(): Promise<{ totalFarmers: string; activePosts: string; helpRate: string; }> {
     return this.safeDbOperation(
       () => this.postgres.getCommunityStats(),
