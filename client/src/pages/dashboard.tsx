@@ -126,7 +126,7 @@ export default function Dashboard() {
                 </motion.div>
                 <div>
                   <motion.h1 
-                    className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent" 
+                    className="text-2xl font-bold text-gray-800 dark:text-gray-100" 
                     data-testid="welcome-message"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}

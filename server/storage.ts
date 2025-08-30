@@ -255,14 +255,17 @@ export class MemStorage implements IStorage {
       .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
       .slice(0, limit);
     
-    // Add mock user data for display
-    return posts.map(post => ({
-      ...post,
-      user: {
-        name: post.userId.includes("1") ? "Rajesh Kumar" : "Suresh Patil",
-        location: post.userId.includes("1") ? "Pune" : "Sangli",
-      }
-    })) as any;
+    // Add real user data for display
+    return posts.map(post => {
+      const user = this.users.get(post.userId);
+      return {
+        ...post,
+        user: {
+          name: user?.name || "Anonymous Farmer",
+          location: user?.location || "Farm Location",
+        }
+      };
+    }) as any;
   }
 
   async createCommunityPost(postData: any): Promise<CommunityPost> {
@@ -481,11 +484,26 @@ class PostgresStorage implements IStorage {
     try {
       const db = getDb();
       const result = await db
-        .select()
+        .select({
+          id: communityPosts.id,
+          userId: communityPosts.userId,
+          title: communityPosts.title,
+          content: communityPosts.content,
+          images: communityPosts.images,
+          likes: communityPosts.likes,
+          comments: communityPosts.comments,
+          tags: communityPosts.tags,
+          createdAt: communityPosts.createdAt,
+          user: {
+            name: users.name,
+            location: users.location,
+          }
+        })
         .from(communityPosts)
+        .leftJoin(users, eq(communityPosts.userId, users.id))
         .orderBy(desc(communityPosts.createdAt))
         .limit(limit);
-      return result;
+      return result as any;
     } catch (error) {
       console.error("Error getting community posts:", error);
       return [];
