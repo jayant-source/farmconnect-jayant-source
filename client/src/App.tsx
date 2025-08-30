@@ -16,6 +16,7 @@ import Onboarding from "@/pages/onboarding";
 import Dashboard from "@/pages/dashboard";
 import CropDetect from "@/pages/crop-detect";
 import MandiPrices from "@/pages/mandi-prices";
+import Weather from "@/pages/weather";
 import Community from "@/pages/community";
 import Marketplace from "@/pages/marketplace";
 import HelpAssistant from "@/pages/help-assistant";
@@ -94,6 +95,12 @@ function Router() {
         <Route path="/mandi-prices">
           <PageWrapper>
             {isAuthenticated ? <MandiPrices /> : <Auth />}
+          </PageWrapper>
+        </Route>
+        
+        <Route path="/weather">
+          <PageWrapper>
+            {isAuthenticated ? <Weather /> : <Auth />}
           </PageWrapper>
         </Route>
         

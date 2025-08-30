@@ -74,6 +74,18 @@ export default function CropDetect() {
     onSuccess: (data) => {
       setDetectionResult(data.result);
       setAnalysisProgress(100);
+      // Automatically open chat after successful analysis
+      setTimeout(() => {
+        setIsChatOpen(true);
+        // Add a contextual message about the detection
+        const contextMessage: ChatMessage = {
+          id: Date.now().toString() + "_context",
+          text: `I've analyzed your crop image and detected ${data.result.diseaseName}. Feel free to ask me any questions about this disease, treatment options, or any other farming concerns you might have!`,
+          isUser: false,
+          timestamp: new Date(),
+        };
+        setChatMessages(prev => [...prev, contextMessage]);
+      }, 1500); // Wait 1.5 seconds after analysis completion
     },
     onError: (error) => {
       toast({
@@ -322,25 +334,39 @@ export default function CropDetect() {
                   </div>
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="space-y-3 mt-6">
+                  {/* AI Chat Button - Primary Action */}
                   <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={handleSaveReport}
-                    disabled={saveReportMutation.isPending}
-                    data-testid="button-save-report"
+                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                    onClick={() => setIsChatOpen(true)}
+                    data-testid="button-ask-ai"
                   >
-                    <Save className="mr-2 h-4 w-4" />
-                    {t("detection.saveReport")}
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Ask AI About This Disease
                   </Button>
-                  <Button 
-                    className="flex-1"
-                    onClick={handleShare}
-                    data-testid="button-share"
-                  >
-                    <Share className="mr-2 h-4 w-4" />
-                    {t("detection.share")}
-                  </Button>
+                  
+                  {/* Secondary Actions */}
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={handleSaveReport}
+                      disabled={saveReportMutation.isPending}
+                      data-testid="button-save-report"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      {t("detection.saveReport")}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={handleShare}
+                      data-testid="button-share"
+                    >
+                      <Share className="mr-2 h-4 w-4" />
+                      {t("detection.share")}
+                    </Button>
+                  </div>
                 </div>
               </motion.div>
             )}
