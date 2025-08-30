@@ -33,8 +33,8 @@ export default function Dashboard() {
       description: "AI-powered crop analysis",
       href: "/crop-detect",
       color: "bg-gradient-to-br from-emerald-500/20 to-teal-500/20",
-      iconColor: "text-emerald-600",
-      accent: "border-emerald-200",
+      iconColor: "text-emerald-400",
+      accent: "border-emerald-500/30",
       testId: "action-detect-disease",
     },
     {
@@ -42,9 +42,9 @@ export default function Dashboard() {
       title: t("dashboard.weather"),
       description: "Real-time weather updates",
       href: "/weather",
-      color: "bg-gradient-to-br from-blue-500/20 to-sky-500/20",
-      iconColor: "text-blue-600",
-      accent: "border-blue-200",
+      color: "bg-gradient-to-br from-blue-500/20 to-cyan-500/20",
+      iconColor: "text-blue-400",
+      accent: "border-blue-500/30",
       testId: "action-weather",
     },
     {
@@ -53,8 +53,8 @@ export default function Dashboard() {
       description: "Live market prices",
       href: "/mandi-prices",
       color: "bg-gradient-to-br from-amber-500/20 to-orange-500/20",
-      iconColor: "text-amber-600",
-      accent: "border-amber-200",
+      iconColor: "text-amber-400",
+      accent: "border-amber-500/30",
       testId: "action-mandi-prices",
     },
     {
@@ -63,8 +63,8 @@ export default function Dashboard() {
       description: "Connect with farmers",
       href: "/community",
       color: "bg-gradient-to-br from-purple-500/20 to-pink-500/20",
-      iconColor: "text-purple-600",
-      accent: "border-purple-200",
+      iconColor: "text-purple-400",
+      accent: "border-purple-500/30",
       testId: "action-community",
     },
   ];
@@ -74,22 +74,22 @@ export default function Dashboard() {
       label: "Disease Reports",
       value: Array.isArray(recentReports) ? recentReports.length : 0,
       icon: Leaf,
-      color: "text-emerald-600",
-      bg: "bg-emerald-500/10",
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/20",
     },
     {
       label: "Community Members",
       value: (communityStats as any)?.totalFarmers || "2.5K",
       icon: Users,
-      color: "text-purple-600",
-      bg: "bg-purple-500/10",
+      color: "text-purple-400",
+      bg: "bg-purple-500/20",
     },
     {
       label: "Active Posts",
       value: (communityStats as any)?.activePosts || "157",
       icon: TrendingUp,
-      color: "text-blue-600",
-      bg: "bg-blue-500/10",
+      color: "text-blue-400",
+      bg: "bg-blue-500/20",
     },
   ];
 
@@ -101,10 +101,18 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 pb-20">
+    <div className="min-h-screen bg-background pb-20 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      <motion.div
+        className="absolute top-20 right-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-morphing"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 3, delay: 1 }}
+      />
       {/* Enhanced Header with Parallax */}
       <motion.header 
-        className="relative bg-gradient-to-r from-primary/5 via-primary/10 to-accent/5 border-b border-border/50 backdrop-blur-sm"
+        className="relative glass-dark border-b border-border/50 backdrop-blur-lg z-10"
         style={{ y: headerY, opacity: headerOpacity }}
         data-testid="dashboard-header"
       >
