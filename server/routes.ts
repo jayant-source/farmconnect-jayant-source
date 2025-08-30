@@ -596,6 +596,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Produce listings routes
+  app.post("/api/produce-listings", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const listing = await storage.createProduceListing({
+        ...req.body,
+        farmerId: req.session.userId,
+      });
+      res.json({ listing, message: "Produce listing created successfully" });
+    } catch (error) {
+      console.error("Create produce listing error:", error);
+      res.status(500).json({ message: "Failed to create produce listing" });
+    }
+  });
+
+  app.get("/api/produce-listings", async (req, res) => {
+    try {
+      const { status } = req.query;
+      const listings = await storage.getProduceListings(status as string);
+      res.json({ listings });
+    } catch (error) {
+      console.error("Get produce listings error:", error);
+      res.status(500).json({ message: "Failed to get produce listings" });
+    }
+  });
+
+  app.get("/api/produce-listings/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const listing = await storage.getProduceListingById(id);
+      if (!listing) {
+        return res.status(404).json({ message: "Produce listing not found" });
+      }
+      res.json({ listing });
+    } catch (error) {
+      console.error("Get produce listing error:", error);
+      res.status(500).json({ message: "Failed to get produce listing" });
+    }
+  });
+
+  // Bidding routes
+  app.post("/api/bids", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const bid = await storage.createBid({
+        ...req.body,
+        buyerId: req.session.userId,
+      });
+      res.json({ bid, message: "Bid created successfully" });
+    } catch (error) {
+      console.error("Create bid error:", error);
+      res.status(500).json({ message: "Failed to create bid" });
+    }
+  });
+
+  app.get("/api/bids/listing/:listingId", async (req, res) => {
+    try {
+      const { listingId } = req.params;
+      const bids = await storage.getBidsForListing(listingId);
+      res.json({ bids });
+    } catch (error) {
+      console.error("Get bids error:", error);
+      res.status(500).json({ message: "Failed to get bids" });
+    }
+  });
+
+  app.get("/api/bids/user", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const bids = await storage.getUserBids(req.session.userId);
+      res.json({ bids });
+    } catch (error) {
+      console.error("Get user bids error:", error);
+      res.status(500).json({ message: "Failed to get user bids" });
+    }
+  });
+
+  app.put("/api/bids/:bidId/status", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { bidId } = req.params;
+      const { status } = req.body;
+      const bid = await storage.updateBidStatus(bidId, status);
+      res.json({ bid, message: "Bid status updated successfully" });
+    } catch (error) {
+      console.error("Update bid status error:", error);
+      res.status(500).json({ message: "Failed to update bid status" });
+    }
+  });
+
+  // Logistics routes
+  app.post("/api/logistics-orders", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const order = await storage.createLogisticsOrder({
+        ...req.body,
+        farmerId: req.session.userId,
+      });
+      res.json({ order, message: "Logistics order created successfully" });
+    } catch (error) {
+      console.error("Create logistics order error:", error);
+      res.status(500).json({ message: "Failed to create logistics order" });
+    }
+  });
+
+  app.get("/api/logistics-orders", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const orders = await storage.getLogisticsOrders(req.session.userId);
+      res.json({ orders });
+    } catch (error) {
+      console.error("Get logistics orders error:", error);
+      res.status(500).json({ message: "Failed to get logistics orders" });
+    }
+  });
+
+  app.put("/api/logistics-orders/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { id } = req.params;
+      const updates = req.body;
+      const order = await storage.updateLogisticsOrder(id, updates);
+      res.json({ order, message: "Logistics order updated successfully" });
+    } catch (error) {
+      console.error("Update logistics order error:", error);
+      res.status(500).json({ message: "Failed to update logistics order" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

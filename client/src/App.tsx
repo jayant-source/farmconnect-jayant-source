@@ -19,6 +19,7 @@ import MandiPrices from "@/pages/mandi-prices";
 import Weather from "@/pages/weather";
 import Community from "@/pages/community";
 import Marketplace from "@/pages/marketplace";
+import FarmerMarketplace from "@/pages/farmer-marketplace";
 import HelpAssistant from "@/pages/help-assistant";
 import Profile from "@/pages/profile";
 import GovernmentSchemes from "@/pages/government-schemes";
@@ -114,6 +115,12 @@ function Router() {
         <Route path="/marketplace">
           <PageWrapper>
             {isAuthenticated ? <Marketplace /> : <Auth />}
+          </PageWrapper>
+        </Route>
+        
+        <Route path="/farmer-marketplace">
+          <PageWrapper>
+            {isAuthenticated ? <FarmerMarketplace /> : <Auth />}
           </PageWrapper>
         </Route>
         

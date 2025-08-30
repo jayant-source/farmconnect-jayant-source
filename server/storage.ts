@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { eq, desc, count, and, like, sql } from "drizzle-orm";
+import { eq, desc, count, and, like, sql, or } from "drizzle-orm";
 import { getDb } from "./db";
 import { 
   users,
@@ -8,6 +8,9 @@ import {
   marketplaceItems,
   mandiPrices,
   priceAlerts,
+  produceListings,
+  bids,
+  logisticsOrders,
   type User, 
   type InsertUser, 
   type DiseaseReport, 
@@ -16,7 +19,13 @@ import {
   type MarketplaceItem, 
   type MandiPrice,
   type PriceAlert,
-  type InsertPriceAlert
+  type InsertPriceAlert,
+  type ProduceListing,
+  type InsertProduceListing,
+  type Bid,
+  type InsertBid,
+  type LogisticsOrder,
+  type InsertLogisticsOrder
 } from "@shared/schema";
 
 // Enhanced interface with FarmConnect specific methods
@@ -55,6 +64,23 @@ export interface IStorage {
   updatePriceAlert(id: string, updates: Partial<PriceAlert>): Promise<PriceAlert>;
   deletePriceAlert(id: string): Promise<void>;
   getActivePriceAlerts(): Promise<PriceAlert[]>;
+  
+  // Produce listings methods
+  createProduceListing(listing: InsertProduceListing): Promise<ProduceListing>;
+  getProduceListings(status?: string): Promise<ProduceListing[]>;
+  getProduceListingById(id: string): Promise<ProduceListing | undefined>;
+  updateProduceListing(id: string, updates: Partial<ProduceListing>): Promise<ProduceListing>;
+  
+  // Bidding methods
+  createBid(bid: InsertBid): Promise<Bid>;
+  getBidsForListing(listingId: string): Promise<Bid[]>;
+  getUserBids(userId: string): Promise<Bid[]>;
+  updateBidStatus(bidId: string, status: string): Promise<Bid>;
+  
+  // Logistics methods
+  createLogisticsOrder(order: InsertLogisticsOrder): Promise<LogisticsOrder>;
+  getLogisticsOrders(userId: string): Promise<LogisticsOrder[]>;
+  updateLogisticsOrder(id: string, updates: Partial<LogisticsOrder>): Promise<LogisticsOrder>;
 }
 
 export class MemStorage implements IStorage {
@@ -64,6 +90,9 @@ export class MemStorage implements IStorage {
   private marketplaceItems: Map<string, MarketplaceItem>;
   private mandiPrices: Map<string, MandiPrice>;
   private priceAlerts: Map<string, PriceAlert>;
+  private produceListings: Map<string, ProduceListing>;
+  private bids: Map<string, Bid>;
+  private logisticsOrders: Map<string, LogisticsOrder>;
 
   constructor() {
     this.users = new Map();
@@ -72,6 +101,9 @@ export class MemStorage implements IStorage {
     this.marketplaceItems = new Map();
     this.mandiPrices = new Map();
     this.priceAlerts = new Map();
+    this.produceListings = new Map();
+    this.bids = new Map();
+    this.logisticsOrders = new Map();
     
     // Initialize with some sample data
     this.initializeSampleData();
@@ -389,6 +421,136 @@ export class MemStorage implements IStorage {
     return Array.from(this.priceAlerts.values())
       .filter(alert => alert.isActive);
   }
+
+  // Produce listings methods
+  async createProduceListing(listing: InsertProduceListing): Promise<ProduceListing> {
+    const id = randomUUID();
+    const produceListing: ProduceListing = {
+      id,
+      farmerId: listing.farmerId,
+      cropName: listing.cropName,
+      variety: listing.variety || null,
+      quantity: listing.quantity,
+      quantityUnit: listing.quantityUnit,
+      quality: listing.quality,
+      expectedPrice: listing.expectedPrice,
+      priceUnit: listing.priceUnit || null,
+      harvestDate: listing.harvestDate,
+      location: listing.location,
+      description: listing.description || null,
+      images: listing.images || null,
+      status: listing.status || null,
+      createdAt: new Date(),
+    };
+    this.produceListings.set(id, produceListing);
+    return produceListing;
+  }
+
+  async getProduceListings(status?: string): Promise<ProduceListing[]> {
+    let listings = Array.from(this.produceListings.values());
+    if (status) {
+      listings = listings.filter(listing => listing.status === status);
+    }
+    return listings.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async getProduceListingById(id: string): Promise<ProduceListing | undefined> {
+    return this.produceListings.get(id);
+  }
+
+  async updateProduceListing(id: string, updates: Partial<ProduceListing>): Promise<ProduceListing> {
+    const listing = this.produceListings.get(id);
+    if (!listing) {
+      throw new Error("Produce listing not found");
+    }
+    const updatedListing = { ...listing, ...updates };
+    this.produceListings.set(id, updatedListing);
+    return updatedListing;
+  }
+
+  // Bidding methods
+  async createBid(bid: InsertBid): Promise<Bid> {
+    const id = randomUUID();
+    const bidData: Bid = {
+      id,
+      listingId: bid.listingId,
+      buyerId: bid.buyerId,
+      buyerType: bid.buyerType,
+      bidAmount: bid.bidAmount,
+      quantity: bid.quantity,
+      notes: bid.notes || null,
+      status: bid.status || null,
+      validUntil: bid.validUntil,
+      createdAt: new Date(),
+    };
+    this.bids.set(id, bidData);
+    return bidData;
+  }
+
+  async getBidsForListing(listingId: string): Promise<Bid[]> {
+    return Array.from(this.bids.values())
+      .filter(bid => bid.listingId === listingId)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async getUserBids(userId: string): Promise<Bid[]> {
+    return Array.from(this.bids.values())
+      .filter(bid => bid.buyerId === userId)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async updateBidStatus(bidId: string, status: string): Promise<Bid> {
+    const bid = this.bids.get(bidId);
+    if (!bid) {
+      throw new Error("Bid not found");
+    }
+    const updatedBid = { ...bid, status };
+    this.bids.set(bidId, updatedBid);
+    return updatedBid;
+  }
+
+  // Logistics methods
+  async createLogisticsOrder(order: InsertLogisticsOrder): Promise<LogisticsOrder> {
+    const id = randomUUID();
+    const logisticsOrder: LogisticsOrder = {
+      id,
+      listingId: order.listingId,
+      buyerId: order.buyerId,
+      farmerId: order.farmerId,
+      bidId: order.bidId || null,
+      pickupLocation: order.pickupLocation,
+      deliveryLocation: order.deliveryLocation,
+      transportPartner: order.transportPartner,
+      storagePartner: order.storagePartner || null,
+      transportCost: order.transportCost || null,
+      storageCost: order.storageCost || null,
+      totalAmount: order.totalAmount,
+      paymentStatus: order.paymentStatus || null,
+      orderStatus: order.orderStatus || null,
+      scheduledPickup: order.scheduledPickup || null,
+      estimatedDelivery: order.estimatedDelivery || null,
+      actualDelivery: order.actualDelivery || null,
+      createdAt: new Date(),
+    };
+    this.logisticsOrders.set(id, logisticsOrder);
+    return logisticsOrder;
+  }
+
+  async getLogisticsOrders(userId: string): Promise<LogisticsOrder[]> {
+    return Array.from(this.logisticsOrders.values())
+      .filter(order => order.farmerId === userId || order.buyerId === userId)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async updateLogisticsOrder(id: string, updates: Partial<LogisticsOrder>): Promise<LogisticsOrder> {
+    const order = this.logisticsOrders.get(id);
+    if (!order) {
+      throw new Error("Logistics order not found");
+    }
+    const updatedOrder = { ...order, ...updates };
+    this.logisticsOrders.set(id, updatedOrder);
+    return updatedOrder;
+  }
 }
 
 class PostgresStorage implements IStorage {
@@ -692,6 +854,155 @@ class PostgresStorage implements IStorage {
       return [];
     }
   }
+
+  // Produce listings methods
+  async createProduceListing(listing: InsertProduceListing): Promise<ProduceListing> {
+    try {
+      const db = getDb();
+      const result = await db.insert(produceListings).values(listing).returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error creating produce listing:", error);
+      throw error;
+    }
+  }
+
+  async getProduceListings(status?: string): Promise<ProduceListing[]> {
+    try {
+      const db = getDb();
+      let query = db.select().from(produceListings);
+      if (status) {
+        query = query.where(eq(produceListings.status, status));
+      }
+      const result = await query.orderBy(desc(produceListings.createdAt));
+      return result;
+    } catch (error) {
+      console.error("Error getting produce listings:", error);
+      return [];
+    }
+  }
+
+  async getProduceListingById(id: string): Promise<ProduceListing | undefined> {
+    try {
+      const db = getDb();
+      const result = await db.select().from(produceListings).where(eq(produceListings.id, id)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error("Error getting produce listing:", error);
+      return undefined;
+    }
+  }
+
+  async updateProduceListing(id: string, updates: Partial<ProduceListing>): Promise<ProduceListing> {
+    try {
+      const db = getDb();
+      const result = await db.update(produceListings).set(updates).where(eq(produceListings.id, id)).returning();
+      if (!result[0]) {
+        throw new Error("Produce listing not found");
+      }
+      return result[0];
+    } catch (error) {
+      console.error("Error updating produce listing:", error);
+      throw error;
+    }
+  }
+
+  // Bidding methods
+  async createBid(bid: InsertBid): Promise<Bid> {
+    try {
+      const db = getDb();
+      const result = await db.insert(bids).values(bid).returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error creating bid:", error);
+      throw error;
+    }
+  }
+
+  async getBidsForListing(listingId: string): Promise<Bid[]> {
+    try {
+      const db = getDb();
+      const result = await db
+        .select()
+        .from(bids)
+        .where(eq(bids.listingId, listingId))
+        .orderBy(desc(bids.createdAt));
+      return result;
+    } catch (error) {
+      console.error("Error getting bids for listing:", error);
+      return [];
+    }
+  }
+
+  async getUserBids(userId: string): Promise<Bid[]> {
+    try {
+      const db = getDb();
+      const result = await db
+        .select()
+        .from(bids)
+        .where(eq(bids.buyerId, userId))
+        .orderBy(desc(bids.createdAt));
+      return result;
+    } catch (error) {
+      console.error("Error getting user bids:", error);
+      return [];
+    }
+  }
+
+  async updateBidStatus(bidId: string, status: string): Promise<Bid> {
+    try {
+      const db = getDb();
+      const result = await db.update(bids).set({ status }).where(eq(bids.id, bidId)).returning();
+      if (!result[0]) {
+        throw new Error("Bid not found");
+      }
+      return result[0];
+    } catch (error) {
+      console.error("Error updating bid status:", error);
+      throw error;
+    }
+  }
+
+  // Logistics methods
+  async createLogisticsOrder(order: InsertLogisticsOrder): Promise<LogisticsOrder> {
+    try {
+      const db = getDb();
+      const result = await db.insert(logisticsOrders).values(order).returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error creating logistics order:", error);
+      throw error;
+    }
+  }
+
+  async getLogisticsOrders(userId: string): Promise<LogisticsOrder[]> {
+    try {
+      const db = getDb();
+      const result = await db
+        .select()
+        .from(logisticsOrders)
+        .where(or(eq(logisticsOrders.farmerId, userId), eq(logisticsOrders.buyerId, userId)))
+        .orderBy(desc(logisticsOrders.createdAt));
+      return result;
+    } catch (error) {
+      console.error("Error getting logistics orders:", error);
+      return [];
+    }
+  }
+
+  async updateLogisticsOrder(id: string, updates: Partial<LogisticsOrder>): Promise<LogisticsOrder> {
+    try {
+      const db = getDb();
+      const result = await db.update(logisticsOrders).set(updates).where(eq(logisticsOrders.id, id)).returning();
+      if (!result[0]) {
+        throw new Error("Logistics order not found");
+      }
+      return result[0];
+    } catch (error) {
+      console.error("Error updating logistics order:", error);
+      throw error;
+    }
+  }
 }
 
 // Create a hybrid storage that falls back to in-memory when database fails
@@ -849,6 +1160,86 @@ class HybridStorage implements IStorage {
     return this.safeDbOperation(
       () => this.postgres.getActivePriceAlerts(),
       () => this.memory.getActivePriceAlerts()
+    );
+  }
+
+  // Produce listings methods
+  async createProduceListing(listing: InsertProduceListing): Promise<ProduceListing> {
+    return this.safeDbOperation(
+      () => this.postgres.createProduceListing(listing),
+      () => this.memory.createProduceListing(listing)
+    );
+  }
+
+  async getProduceListings(status?: string): Promise<ProduceListing[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getProduceListings(status),
+      () => this.memory.getProduceListings(status)
+    );
+  }
+
+  async getProduceListingById(id: string): Promise<ProduceListing | undefined> {
+    return this.safeDbOperation(
+      () => this.postgres.getProduceListingById(id),
+      () => this.memory.getProduceListingById(id)
+    );
+  }
+
+  async updateProduceListing(id: string, updates: Partial<ProduceListing>): Promise<ProduceListing> {
+    return this.safeDbOperation(
+      () => this.postgres.updateProduceListing(id, updates),
+      () => this.memory.updateProduceListing(id, updates)
+    );
+  }
+
+  // Bidding methods
+  async createBid(bid: InsertBid): Promise<Bid> {
+    return this.safeDbOperation(
+      () => this.postgres.createBid(bid),
+      () => this.memory.createBid(bid)
+    );
+  }
+
+  async getBidsForListing(listingId: string): Promise<Bid[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getBidsForListing(listingId),
+      () => this.memory.getBidsForListing(listingId)
+    );
+  }
+
+  async getUserBids(userId: string): Promise<Bid[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getUserBids(userId),
+      () => this.memory.getUserBids(userId)
+    );
+  }
+
+  async updateBidStatus(bidId: string, status: string): Promise<Bid> {
+    return this.safeDbOperation(
+      () => this.postgres.updateBidStatus(bidId, status),
+      () => this.memory.updateBidStatus(bidId, status)
+    );
+  }
+
+  // Logistics methods
+  async createLogisticsOrder(order: InsertLogisticsOrder): Promise<LogisticsOrder> {
+    return this.safeDbOperation(
+      () => this.postgres.createLogisticsOrder(order),
+      () => this.memory.createLogisticsOrder(order)
+    );
+  }
+
+  async getLogisticsOrders(userId: string): Promise<LogisticsOrder[]> {
+    return this.safeDbOperation(
+      () => this.postgres.getLogisticsOrders(userId),
+      () => this.memory.getLogisticsOrders(userId)
+    );
+  }
+
+  async updateLogisticsOrder(id: string, updates: Partial<LogisticsOrder>): Promise<LogisticsOrder> {
+    return this.safeDbOperation(
+      () => this.postgres.updateLogisticsOrder(id, updates),
+      () => this.memory.updateLogisticsOrder(id, updates)
     );
   }
 }

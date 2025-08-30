@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
-import { Home, Camera, Users, User, BarChart3, Shield, MessageCircle, Sparkles } from "lucide-react";
+import { Home, Camera, Users, User, BarChart3, Shield, MessageCircle, Sparkles, Gavel } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
@@ -24,10 +24,10 @@ const navigationItems = [
     testId: "nav-mandi",
   },
   {
-    icon: Shield,
-    href: "/government-schemes",
-    labelKey: "nav.schemes",
-    testId: "nav-schemes",
+    icon: Gavel,
+    href: "/farmer-marketplace",
+    labelKey: "nav.marketplace",
+    testId: "nav-marketplace",
   },
   {
     icon: User,

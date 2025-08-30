@@ -95,6 +95,58 @@ export const priceAlerts = pgTable("price_alerts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const produceListings = pgTable("produce_listings", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  farmerId: uuid("farmer_id").notNull().references(() => users.id),
+  cropName: text("crop_name").notNull(),
+  variety: text("variety"),
+  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(),
+  quantityUnit: text("quantity_unit").notNull().default("quintal"),
+  quality: text("quality").notNull(), // A, B, C grade
+  expectedPrice: decimal("expected_price", { precision: 10, scale: 2 }).notNull(),
+  priceUnit: text("price_unit").default("per quintal"),
+  harvestDate: timestamp("harvest_date").notNull(),
+  location: text("location").notNull(),
+  description: text("description"),
+  images: jsonb("images").$type<string[]>(),
+  status: text("status").default("active"), // active, sold, expired
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const bids = pgTable("bids", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  listingId: uuid("listing_id").notNull().references(() => produceListings.id),
+  buyerId: uuid("buyer_id").notNull().references(() => users.id),
+  buyerType: text("buyer_type").notNull(), // buyer, warehouse, transporter
+  bidAmount: decimal("bid_amount", { precision: 10, scale: 2 }).notNull(),
+  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(),
+  notes: text("notes"),
+  status: text("status").default("pending"), // pending, accepted, rejected, expired
+  validUntil: timestamp("valid_until").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const logisticsOrders = pgTable("logistics_orders", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  listingId: uuid("listing_id").notNull().references(() => produceListings.id),
+  buyerId: uuid("buyer_id").notNull().references(() => users.id),
+  farmerId: uuid("farmer_id").notNull().references(() => users.id),
+  bidId: uuid("bid_id").references(() => bids.id),
+  pickupLocation: text("pickup_location").notNull(),
+  deliveryLocation: text("delivery_location").notNull(),
+  transportPartner: text("transport_partner").notNull(),
+  storagePartner: text("storage_partner"),
+  transportCost: decimal("transport_cost", { precision: 10, scale: 2 }),
+  storageCost: decimal("storage_cost", { precision: 10, scale: 2 }),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  paymentStatus: text("payment_status").default("pending"), // pending, paid, failed
+  orderStatus: text("order_status").default("created"), // created, pickup_scheduled, in_transit, delivered, completed
+  scheduledPickup: timestamp("scheduled_pickup"),
+  estimatedDelivery: timestamp("estimated_delivery"),
+  actualDelivery: timestamp("actual_delivery"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -129,6 +181,21 @@ export const insertPriceAlertSchema = createInsertSchema(priceAlerts).omit({
   lastTriggered: true,
 });
 
+export const insertProduceListingSchema = createInsertSchema(produceListings).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBidSchema = createInsertSchema(bids).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertLogisticsOrderSchema = createInsertSchema(logisticsOrders).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -143,3 +210,9 @@ export type InsertMarketplaceItem = z.infer<typeof insertMarketplaceItemSchema>;
 export type PriceAlert = typeof priceAlerts.$inferSelect;
 export type InsertPriceAlert = z.infer<typeof insertPriceAlertSchema>;
 export type WeatherCache = typeof weatherCache.$inferSelect;
+export type ProduceListing = typeof produceListings.$inferSelect;
+export type InsertProduceListing = z.infer<typeof insertProduceListingSchema>;
+export type Bid = typeof bids.$inferSelect;
+export type InsertBid = z.infer<typeof insertBidSchema>;
+export type LogisticsOrder = typeof logisticsOrders.$inferSelect;
+export type InsertLogisticsOrder = z.infer<typeof insertLogisticsOrderSchema>;
