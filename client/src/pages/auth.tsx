@@ -101,16 +101,27 @@ export default function Auth() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <Card className="shadow-2xl border border-border" data-testid="auth-card">
+        <Card className="glass-enhanced shadow-2xl border border-white/20 backdrop-blur-xl" data-testid="auth-card">
           <CardContent className="pt-6">
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Smartphone className="text-white text-3xl" />
-              </div>
-              <h2 className="text-3xl font-bold text-foreground mb-2" data-testid="auth-title">
+              <motion.div 
+                className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl"
+                animate={{ 
+                  rotate: [0, 5, -5, 0],
+                  scale: [1, 1.05, 1]
+                }}
+                transition={{ 
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <Smartphone className="text-white text-4xl" />
+              </motion.div>
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3" data-testid="auth-title">
                 {t("auth.title")}
               </h2>
-              <p className="text-muted-foreground" data-testid="auth-subtitle">
+              <p className="text-lg text-muted-foreground font-medium" data-testid="auth-subtitle">
                 {authStep === "phone" ? t("auth.subtitle") : t("auth.otpSent") + " " + phoneNumber}
               </p>
             </div>
@@ -143,7 +154,7 @@ export default function Auth() {
                 </div>
 
                 <Button 
-                  className="w-full" 
+                  className="w-full font-bold text-lg py-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" 
                   onClick={handleSendOTP}
                   disabled={sendOTPMutation.isPending}
                   data-testid="button-send-otp"
@@ -168,8 +179,9 @@ export default function Auth() {
                 data-testid="otp-step"
               >
                 <div className="text-center">
-                  <div className="text-xs text-accent bg-accent/10 p-2 rounded-lg mb-4">
-                    Demo: Use OTP 0000
+                  <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 rounded-xl mb-6 shadow-lg animate-pulse-slow">
+                    <div className="font-semibold text-sm mb-1">🚀 Demo Mode</div>
+                    <div className="text-xs opacity-90">Enter OTP: <span className="font-bold text-lg">0000</span></div>
                   </div>
                 </div>
 
@@ -195,7 +207,7 @@ export default function Auth() {
                 </div>
 
                 <Button 
-                  className="w-full" 
+                  className="w-full font-bold text-lg py-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" 
                   onClick={handleVerifyOTP}
                   disabled={verifyOTPMutation.isPending}
                   data-testid="button-verify-otp"

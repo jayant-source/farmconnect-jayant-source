@@ -1,5 +1,6 @@
-import type { Express } from "express";
+import express, { type Express } from "express";
 import { createServer, type Server } from "http";
+import session from "express-session";
 import multer from "multer";
 import { z } from "zod";
 import { validateRequest } from "zod-express-middleware";
@@ -48,6 +49,20 @@ const chatMessageSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'farmconnect-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Serve uploaded files
+  app.use('/uploads', express.static('uploads'));
+
   // Authentication routes
   app.post("/api/auth/send-otp", validateRequest(sendOTPSchema), async (req, res) => {
     try {

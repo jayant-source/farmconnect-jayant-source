@@ -68,17 +68,17 @@ export default function Landing() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight" data-testid="hero-title">
+            <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight text-shadow" data-testid="hero-title">
               {t("hero.title")}
               <br />
-              <span className="text-accent">Made Simple</span>
+              <span className="gradient-text animate-sparkle">Made Simple</span>
             </h1>
             <p className="text-xl lg:text-2xl mb-8 text-white/90" data-testid="hero-subtitle">
               {t("hero.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/auth">
-                <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" data-testid="button-get-started">
+                <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-bold text-lg shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 animate-glow border-2 border-primary/20" data-testid="button-get-started">
                   <Camera className="mr-2" />
                   {t("hero.getStarted")}
                 </Button>
@@ -96,12 +96,12 @@ export default function Landing() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="relative z-10 bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl">
+            <div className="relative z-10 glass-enhanced rounded-3xl p-8 shadow-2xl border border-white/20">
               <img 
-                src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-                alt="Farmer using smartphone in field" 
-                className="rounded-2xl shadow-lg w-full h-auto"
-                data-testid="hero-image"
+                src="/@assets/generated_images/Smart_farming_tech_illustration_b6e0fb69.png"
+                alt="Smart farming technology illustration" 
+                className="rounded-2xl w-full h-auto animate-float"
+                data-testid="hero-illustration"
               />
             </div>
             <motion.div 
