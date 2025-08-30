@@ -31,6 +31,8 @@ export interface IStorage {
   
   // Community methods
   getCommunityPosts(limit?: number): Promise<CommunityPost[]>;
+  createCommunityPost(post: any): Promise<CommunityPost>;
+  likeCommunityPost(postId: string, userId: string): Promise<void>;
   getCommunityStats(): Promise<{
     totalFarmers: string;
     activePosts: string;
@@ -243,6 +245,34 @@ export class MemStorage implements IStorage {
     })) as any;
   }
 
+  async createCommunityPost(postData: any): Promise<CommunityPost> {
+    const id = randomUUID();
+    const post: CommunityPost = {
+      id,
+      userId: postData.userId,
+      title: postData.title,
+      content: postData.content,
+      imageUrl: postData.imageUrl || null,
+      likes: 0,
+      comments: 0,
+      authorName: postData.authorName || "Anonymous",
+      authorAvatar: postData.authorAvatar || null,
+      location: postData.location || null,
+      tags: postData.tags || [],
+      createdAt: new Date(),
+    };
+    
+    this.communityPosts.set(id, post);
+    return post;
+  }
+
+  async likeCommunityPost(postId: string, userId: string): Promise<void> {
+    const post = this.communityPosts.get(postId);
+    if (post) {
+      post.likes = (post.likes || 0) + 1;
+    }
+  }
+
   async getCommunityStats(): Promise<{
     totalFarmers: string;
     activePosts: string;
@@ -250,7 +280,7 @@ export class MemStorage implements IStorage {
   }> {
     return {
       totalFarmers: "2.5K",
-      activePosts: "450",
+      activePosts: this.communityPosts.size.toString(),
       helpRate: "95%",
     };
   }
@@ -389,6 +419,40 @@ class PostgresStorage implements IStorage {
     } catch (error) {
       console.error("Error getting community posts:", error);
       return [];
+    }
+  }
+
+  async createCommunityPost(postData: any): Promise<CommunityPost> {
+    try {
+      const [post] = await db
+        .insert(communityPosts)
+        .values({
+          userId: postData.userId,
+          title: postData.title,
+          content: postData.content,
+          imageUrl: postData.imageUrl || null,
+          authorName: postData.authorName || "Anonymous",
+          authorAvatar: postData.authorAvatar || null,
+          location: postData.location || null,
+          tags: postData.tags || [],
+        })
+        .returning();
+      return post;
+    } catch (error) {
+      console.error("Error creating community post:", error);
+      throw new Error("Failed to create post");
+    }
+  }
+
+  async likeCommunityPost(postId: string, userId: string): Promise<void> {
+    try {
+      await db
+        .update(communityPosts)
+        .set({ likes: sql`${communityPosts.likes} + 1` })
+        .where(eq(communityPosts.id, postId));
+    } catch (error) {
+      console.error("Error liking post:", error);
+      throw new Error("Failed to like post");
     }
   }
 

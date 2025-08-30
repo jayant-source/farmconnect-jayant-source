@@ -343,6 +343,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/community/posts", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      const postData = {
+        ...req.body,
+        userId: req.session.userId,
+        authorName: user?.name || "Anonymous",
+        authorAvatar: user?.avatar || null,
+      };
+      
+      const post = await storage.createCommunityPost(postData);
+      res.json({ post, message: "Post created successfully" });
+    } catch (error) {
+      console.error("Create post error:", error);
+      res.status(500).json({ message: "Failed to create post" });
+    }
+  });
+
+  app.post("/api/community/posts/:postId/like", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const { postId } = req.params;
+      await storage.likeCommunityPost(postId, req.session.userId);
+      res.json({ message: "Post liked successfully" });
+    } catch (error) {
+      console.error("Like post error:", error);
+      res.status(500).json({ message: "Failed to like post" });
+    }
+  });
+
   app.get("/api/community/stats", async (req, res) => {
     try {
       const stats = await storage.getCommunityStats();

@@ -2,12 +2,14 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
-import { ArrowLeft, Camera, Zap, RotateCcw, Save, Share } from "lucide-react";
+import { ArrowLeft, Camera, Zap, RotateCcw, Save, Share, MessageCircle, Send, Bot, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -22,6 +24,13 @@ interface DetectionResult {
   isMockResult: boolean;
 }
 
+interface ChatMessage {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+}
+
 export default function CropDetect() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
@@ -31,6 +40,18 @@ export default function CropDetect() {
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [detectionResult, setDetectionResult] = useState<DetectionResult | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  
+  // Chat functionality state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: "1",
+      text: "Hello! I'm your AI farming assistant. Ask me about crop diseases, treatments, or any farming questions you have!",
+      isUser: false,
+      timestamp: new Date(),
+    }
+  ]);
+  const [newMessage, setNewMessage] = useState("");
 
   const analyzeImageMutation = useMutation({
     mutationFn: async (imageFile: File) => {
@@ -135,6 +156,51 @@ export default function CropDetect() {
     }
   };
 
+  const sendChatMessageMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest("POST", "/api/assistant/chat", { 
+        message,
+        context: detectionResult ? {
+          diseaseName: detectionResult.diseaseName,
+          severity: detectionResult.severity,
+          symptoms: detectionResult.symptoms
+        } : null
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      const assistantMessage: ChatMessage = {
+        id: Date.now().toString() + "_assistant",
+        text: data.response,
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setChatMessages(prev => [...prev, assistantMessage]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Chat Error",
+        description: "Failed to get response from AI assistant",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
+    
+    const userMessage: ChatMessage = {
+      id: Date.now().toString() + "_user",
+      text: newMessage,
+      isUser: true,
+      timestamp: new Date(),
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    sendChatMessageMutation.mutate(newMessage);
+    setNewMessage("");
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -151,6 +217,15 @@ export default function CropDetect() {
         <h1 className="text-xl font-semibold" data-testid="page-title">
           {t("cropDetect.title")}
         </h1>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setIsChatOpen(true)}
+          className="ml-4"
+          data-testid="button-open-chat"
+        >
+          <MessageCircle className="h-5 w-5" />
+        </Button>
       </header>
 
       {/* Camera Interface */}
@@ -269,6 +344,81 @@ export default function CropDetect() {
                 </div>
               </motion.div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Chat Interface */}
+      <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
+        <DialogContent className="max-w-md h-[600px] flex flex-col" data-testid="chat-modal">
+          <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center space-x-2">
+              <Bot className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">AI Farming Assistant</h3>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsChatOpen(false)}
+              data-testid="button-close-chat"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4">
+              {chatMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                  data-testid={`chat-message-${message.isUser ? 'user' : 'assistant'}`}
+                >
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.isUser
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    <p className="text-sm">{message.text}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      {message.timestamp.toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {sendChatMessageMutation.isPending && (
+                <div className="flex justify-start">
+                  <div className="bg-muted text-muted-foreground p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin h-4 w-4 border-2 border-primary rounded-full border-t-transparent"></div>
+                      <span className="text-sm">AI is thinking...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+          
+          <div className="border-t p-4">
+            <div className="flex space-x-2">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Ask about farming, diseases, or treatments..."
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="flex-1"
+                data-testid="input-chat-message"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || sendChatMessageMutation.isPending}
+                data-testid="button-send-message"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -24,7 +24,9 @@ export default function WeatherWidget() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isGettingLocation, setIsGettingLocation] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<string>(user?.location || "");
+  const [currentLocation, setCurrentLocation] = useState<string>(
+    user?.location || "Mumbai, Maharashtra" // Default location for weather
+  );
 
   const { data: weather, isLoading, error } = useQuery<WeatherData>({
     queryKey: ["/api/weather/current", currentLocation],

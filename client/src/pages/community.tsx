@@ -1,15 +1,31 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, Heart, MessageCircle, Share, MapPin } from "lucide-react";
+import { ArrowLeft, Plus, Heart, MessageCircle, Share, MapPin, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useQuery } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useState } from "react";
 
 export default function Community() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [newPost, setNewPost] = useState({
+    title: "",
+    content: "",
+    location: "",
+  });
 
   const { data: communityPosts, isLoading } = useQuery({
     queryKey: ["/api/community/posts"],
@@ -19,9 +35,53 @@ export default function Community() {
     queryKey: ["/api/community/stats"],
   });
 
+  const createPostMutation = useMutation({
+    mutationFn: async (postData: typeof newPost) => {
+      const response = await apiRequest("POST", "/api/community/posts", postData);
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsCreatePostOpen(false);
+      setNewPost({ title: "", content: "", location: "" });
+      queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/community/stats"] });
+      toast({
+        title: "Success",
+        description: "Your post has been created successfully!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const likePostMutation = useMutation({
+    mutationFn: async (postId: string) => {
+      const response = await apiRequest("POST", `/api/community/posts/${postId}/like`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
+      toast({
+        title: "Liked!",
+        description: "You liked this post",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLike = (postId: string) => {
-    // TODO: Implement like functionality
-    console.log("Like post:", postId);
+    likePostMutation.mutate(postId);
   };
 
   const handleComment = (postId: string) => {
@@ -30,8 +90,31 @@ export default function Community() {
   };
 
   const handleShare = (postId: string) => {
-    // TODO: Implement share functionality
-    console.log("Share post:", postId);
+    if (navigator.share) {
+      navigator.share({
+        title: "FarmConnect Community Post",
+        text: "Check out this post from the farming community!",
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link copied!",
+        description: "Post link copied to clipboard",
+      });
+    }
+  };
+
+  const handleCreatePost = () => {
+    if (!newPost.title.trim() || !newPost.content.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in title and content",
+        variant: "destructive",
+      });
+      return;
+    }
+    createPostMutation.mutate(newPost);
   };
 
   return (
@@ -50,9 +133,78 @@ export default function Community() {
         <h1 className="text-xl font-semibold flex-1" data-testid="page-title">
           {t("community.title")}
         </h1>
-        <Button size="icon" data-testid="button-create-post">
-          <Plus className="h-5 w-5" />
-        </Button>
+        <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+          <DialogTrigger asChild>
+            <Button size="icon" data-testid="button-create-post">
+              <Plus className="h-5 w-5" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Post</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={newPost.title}
+                  onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="What would you like to share?"
+                  data-testid="input-post-title"
+                />
+              </div>
+              <div>
+                <Label htmlFor="content">Content</Label>
+                <Textarea
+                  id="content"
+                  value={newPost.content}
+                  onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="Share your farming experience, question, or advice..."
+                  rows={4}
+                  data-testid="textarea-post-content"
+                />
+              </div>
+              <div>
+                <Label htmlFor="location">Location (Optional)</Label>
+                <Input
+                  id="location"
+                  value={newPost.location}
+                  onChange={(e) => setNewPost(prev => ({ ...prev, location: e.target.value }))}
+                  placeholder="Your village, district"
+                  data-testid="input-post-location"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCreatePostOpen(false)}
+                  data-testid="button-cancel-post"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreatePost}
+                  disabled={createPostMutation.isPending}
+                  data-testid="button-submit-post"
+                  className="flex-1"
+                >
+                  {createPostMutation.isPending ? (
+                    <>
+                      <Send className="mr-2 h-4 w-4 animate-pulse" />
+                      Posting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Share Post
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </header>
 
       <div className="p-6 space-y-6">

@@ -2,28 +2,50 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
-import { Smartphone, Loader2 } from "lucide-react";
+import { Smartphone, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth";
 
-type AuthStep = "phone" | "otp";
+type AuthStep = "phone" | "otp" | "profile";
+
+const crops = [
+  { id: "rice", name: "Rice" },
+  { id: "wheat", name: "Wheat" },
+  { id: "cotton", name: "Cotton" },
+  { id: "sugarcane", name: "Sugarcane" },
+  { id: "maize", name: "Maize" },
+  { id: "others", name: "Others" },
+];
 
 export default function Auth() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { login, setPhone } = useAuth();
+  const { login, setPhone, updateUser } = useAuth();
   
   const [authStep, setAuthStep] = useState<AuthStep>("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
+  const [userToUpdate, setUserToUpdate] = useState(null);
+  
+  // Profile form data
+  const [formData, setFormData] = useState({
+    name: "",
+    age: "",
+    location: "",
+    farmSize: "",
+    primaryCrops: [] as string[],
+    language: "en",
+  });
 
   const sendOTPMutation = useMutation({
     mutationFn: async (phone: string) => {
@@ -54,15 +76,39 @@ export default function Auth() {
     },
     onSuccess: (data) => {
       login(data.user);
+      setUserToUpdate(data.user);
       if (data.user.isOnboarded) {
         setLocation("/dashboard");
       } else {
-        setLocation("/onboarding");
+        setAuthStep("profile");
       }
     },
     onError: (error) => {
       toast({
         title: "Invalid OTP",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async (userData: typeof formData) => {
+      const response = await apiRequest("PUT", "/api/user/profile", userData);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      updateUser(data.user);
+      i18n.changeLanguage(data.user.language);
+      setLocation("/dashboard");
+      toast({
+        title: "Welcome to FarmConnect!",
+        description: "Your profile has been successfully completed!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -91,6 +137,30 @@ export default function Auth() {
       return;
     }
     verifyOTPMutation.mutate({ phone: phoneNumber, otp });
+  };
+
+  const handleCropToggle = (cropId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      primaryCrops: prev.primaryCrops.includes(cropId)
+        ? prev.primaryCrops.filter(id => id !== cropId)
+        : [...prev.primaryCrops, cropId]
+    }));
+  };
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateUserMutation.mutate(formData);
   };
 
   return (
@@ -230,6 +300,122 @@ export default function Auth() {
                 >
                   {t("auth.resendOTP")}
                 </Button>
+              </motion.div>
+            )}
+
+            {authStep === "profile" && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+                data-testid="profile-step"
+              >
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <User className="text-white text-2xl" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Complete Your Profile</h3>
+                  <p className="text-muted-foreground">Tell us about yourself and your farming activities</p>
+                </div>
+
+                <form onSubmit={handleProfileSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Full Name *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Enter your name"
+                        data-testid="input-name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="age">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        value={formData.age}
+                        onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
+                        placeholder="25"
+                        data-testid="input-age"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="Village, District, State"
+                      data-testid="input-location"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="farmSize">Farm Size (acres)</Label>
+                    <Input
+                      id="farmSize"
+                      type="number"
+                      step="0.1"
+                      value={formData.farmSize}
+                      onChange={(e) => setFormData(prev => ({ ...prev, farmSize: e.target.value }))}
+                      placeholder="5.0"
+                      data-testid="input-farm-size"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Primary Crops</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {crops.map((crop) => (
+                        <div key={crop.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={crop.id}
+                            checked={formData.primaryCrops.includes(crop.id)}
+                            onCheckedChange={() => handleCropToggle(crop.id)}
+                            data-testid={`checkbox-crop-${crop.id}`}
+                          />
+                          <Label htmlFor={crop.id} className="text-sm">{crop.name}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="language">Preferred Language</Label>
+                    <Select 
+                      value={formData.language} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}
+                    >
+                      <SelectTrigger data-testid="select-language">
+                        <SelectValue placeholder="Select Language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="hi">हिन्दी</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button 
+                    type="submit"
+                    className="w-full font-bold text-lg py-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" 
+                    disabled={updateUserMutation.isPending}
+                    data-testid="button-complete-profile"
+                  >
+                    {updateUserMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Profile...
+                      </>
+                    ) : (
+                      "Complete Profile & Get Started"
+                    )}
+                  </Button>
+                </form>
               </motion.div>
             )}
           </CardContent>
