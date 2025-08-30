@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
-import { Smartphone, Loader2, User } from "lucide-react";
+import { Smartphone, Loader2, User, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth";
 
-type AuthStep = "phone" | "otp" | "profile";
+type AuthStep = "combined";
 
 const crops = [
   { id: "rice", name: "Rice" },
@@ -32,10 +32,10 @@ export default function Auth() {
   const { toast } = useToast();
   const { login, setPhone, updateUser } = useAuth();
   
-  const [authStep, setAuthStep] = useState<AuthStep>("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
-  const [userToUpdate, setUserToUpdate] = useState(null);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
   
   // Profile form data
   const [formData, setFormData] = useState({
@@ -54,7 +54,7 @@ export default function Auth() {
     },
     onSuccess: () => {
       setPhone(phoneNumber);
-      setAuthStep("otp");
+      setOtpSent(true);
       toast({
         title: "OTP Sent",
         description: t("auth.otpSent") + " " + phoneNumber,
@@ -76,11 +76,16 @@ export default function Auth() {
     },
     onSuccess: (data) => {
       login(data.user);
-      setUserToUpdate(data.user);
+      setOtpVerified(true);
       if (data.user.isOnboarded) {
+        updateUser(data.user);
+        i18n.changeLanguage(data.user.language);
         setLocation("/dashboard");
       } else {
-        setAuthStep("profile");
+        toast({
+          title: "Phone Verified!",
+          description: "Please complete your profile to continue.",
+        });
       }
     },
     onError: (error) => {
@@ -148,8 +153,17 @@ export default function Auth() {
     }));
   };
 
-  const handleProfileSubmit = (e: React.FormEvent) => {
+  const handleCompleteOnboarding = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!otpVerified) {
+      toast({
+        title: "Error",
+        description: "Please verify your phone number first",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (!formData.name.trim()) {
       toast({
@@ -166,7 +180,7 @@ export default function Auth() {
   return (
     <section className="min-h-screen bg-background flex items-center justify-center p-6">
       <motion.div
-        className="w-full max-w-md"
+        className="w-full max-w-2xl"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -189,247 +203,212 @@ export default function Auth() {
                 <Smartphone className="text-white text-4xl" />
               </motion.div>
               <h2 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3" data-testid="auth-title">
-                {t("auth.title")}
+                Join FarmConnect
               </h2>
               <p className="text-lg text-muted-foreground font-medium" data-testid="auth-subtitle">
-                {authStep === "phone" ? t("auth.subtitle") : t("auth.otpSent") + " " + phoneNumber}
+                Complete your registration in one simple form
               </p>
             </div>
 
-            {authStep === "phone" && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
-                data-testid="phone-step"
-              >
-                <div>
-                  <Label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
-                    {t("auth.phoneLabel")}
-                  </Label>
-                  <div className="relative">
-                    <select className="absolute left-3 top-3 bg-transparent border-none text-muted-foreground text-sm">
-                      <option>+91</option>
-                    </select>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="9876543210"
-                      className="pl-16"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      data-testid="input-phone"
-                    />
-                  </div>
+            <form onSubmit={handleCompleteOnboarding} className="space-y-6">
+              {/* Phone Number Section */}
+              <div className="bg-muted/50 p-6 rounded-lg space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Smartphone className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Phone Verification</h3>
+                  {otpVerified && <CheckCircle className="h-5 w-5 text-green-500" />}
                 </div>
-
-                <Button 
-                  className="w-full font-bold text-lg py-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" 
-                  onClick={handleSendOTP}
-                  disabled={sendOTPMutation.isPending}
-                  data-testid="button-send-otp"
-                >
-                  {sendOTPMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    t("auth.sendOTP")
-                  )}
-                </Button>
-              </motion.div>
-            )}
-
-            {authStep === "otp" && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
-                data-testid="otp-step"
-              >
-                <div className="text-center">
-                  <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 rounded-xl mb-6 shadow-lg animate-pulse-slow">
-                    <div className="font-semibold text-sm mb-1">🚀 Demo Mode</div>
-                    <div className="text-xs opacity-90">Enter OTP: <span className="font-bold text-lg">0000</span></div>
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="block text-sm font-medium text-foreground mb-2">
-                    {t("auth.otpLabel")}
-                  </Label>
-                  <div className="flex justify-center">
-                    <InputOTP 
-                      maxLength={4} 
-                      value={otp} 
-                      onChange={setOtp}
-                      data-testid="input-otp"
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                </div>
-
-                <Button 
-                  className="w-full font-bold text-lg py-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" 
-                  onClick={handleVerifyOTP}
-                  disabled={verifyOTPMutation.isPending}
-                  data-testid="button-verify-otp"
-                >
-                  {verifyOTPMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    t("auth.verify")
-                  )}
-                </Button>
-
-                <Button 
-                  variant="ghost" 
-                  className="w-full" 
-                  onClick={() => setAuthStep("phone")}
-                  data-testid="button-back-to-phone"
-                >
-                  {t("auth.resendOTP")}
-                </Button>
-              </motion.div>
-            )}
-
-            {authStep === "profile" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-6"
-                data-testid="profile-step"
-              >
-                <div className="text-center mb-6">
-                  <motion.div 
-                    className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl"
-                    animate={{ 
-                      scale: [1, 1.1, 1],
-                      rotateY: [0, 180, 360]
-                    }}
-                    transition={{ 
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  >
-                    <User className="text-white text-2xl" />
-                  </motion.div>
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent mb-2">Complete Your Profile</h3>
-                  <p className="text-muted-foreground">Help us personalize your farming experience</p>
-                </div>
-
-                <form onSubmit={handleProfileSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">Full Name *</Label>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+                      {t("auth.phoneLabel")}
+                    </Label>
+                    <div className="relative">
+                      <select className="absolute left-3 top-3 bg-transparent border-none text-muted-foreground text-sm">
+                        <option>+91</option>
+                      </select>
                       <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Enter your name"
-                        data-testid="input-name"
+                        id="phone"
+                        type="tel"
+                        placeholder="9876543210"
+                        className="pl-16"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        disabled={otpVerified}
+                        data-testid="input-phone"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="age">Age</Label>
-                      <Input
-                        id="age"
-                        type="number"
-                        value={formData.age}
-                        onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                        placeholder="25"
-                        data-testid="input-age"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="location">Location</Label>
-                    <Input
-                      id="location"
-                      value={formData.location}
-                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                      placeholder="Village, District, State"
-                      data-testid="input-location"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="farmSize">Farm Size (acres)</Label>
-                    <Input
-                      id="farmSize"
-                      type="number"
-                      step="0.1"
-                      value={formData.farmSize}
-                      onChange={(e) => setFormData(prev => ({ ...prev, farmSize: e.target.value }))}
-                      placeholder="5.0"
-                      data-testid="input-farm-size"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Primary Crops</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {crops.map((crop) => (
-                        <div key={crop.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={crop.id}
-                            checked={formData.primaryCrops.includes(crop.id)}
-                            onCheckedChange={() => handleCropToggle(crop.id)}
-                            data-testid={`checkbox-crop-${crop.id}`}
-                          />
-                          <Label htmlFor={crop.id} className="text-sm">{crop.name}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="language">Preferred Language</Label>
-                    <Select 
-                      value={formData.language} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}
-                    >
-                      <SelectTrigger data-testid="select-language">
-                        <SelectValue placeholder="Select Language" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="hi">हिन्दी</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Button 
-                    type="submit"
-                    className="w-full font-bold text-lg py-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" 
-                    disabled={updateUserMutation.isPending}
-                    data-testid="button-complete-profile"
-                  >
-                    {updateUserMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating Profile...
-                      </>
-                    ) : (
-                      "Complete Profile & Get Started"
+                    {!otpSent && (
+                      <Button 
+                        type="button"
+                        className="w-full mt-2" 
+                        onClick={handleSendOTP}
+                        disabled={sendOTPMutation.isPending || otpVerified}
+                        data-testid="button-send-otp"
+                      >
+                        {sendOTPMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          "Send OTP"
+                        )}
+                      </Button>
                     )}
-                  </Button>
-                </form>
-              </motion.div>
-            )}
+                  </div>
+
+                  {otpSent && !otpVerified && (
+                    <div>
+                      <Label className="block text-sm font-medium text-foreground mb-2">
+                        Enter OTP
+                      </Label>
+                      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-3 rounded-lg mb-3 text-center">
+                        <div className="font-semibold text-sm mb-1">🚀 Demo Mode</div>
+                        <div className="text-xs opacity-90">Enter OTP: <span className="font-bold">0000</span></div>
+                      </div>
+                      <div className="flex justify-center mb-2">
+                        <InputOTP 
+                          maxLength={4} 
+                          value={otp} 
+                          onChange={setOtp}
+                          data-testid="input-otp"
+                        >
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                      <Button 
+                        type="button"
+                        className="w-full" 
+                        onClick={handleVerifyOTP}
+                        disabled={verifyOTPMutation.isPending}
+                        data-testid="button-verify-otp"
+                      >
+                        {verifyOTPMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Verifying...
+                          </>
+                        ) : (
+                          "Verify OTP"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Profile Information Section */}
+              <div className="bg-muted/50 p-6 rounded-lg space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <User className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Profile Information</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Enter your name"
+                      data-testid="input-name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="age">Age</Label>
+                    <Input
+                      id="age"
+                      type="number"
+                      value={formData.age}
+                      onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
+                      placeholder="25"
+                      data-testid="input-age"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="Village, District, State"
+                    data-testid="input-location"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="farmSize">Farm Size (acres)</Label>
+                  <Input
+                    id="farmSize"
+                    type="number"
+                    step="0.1"
+                    value={formData.farmSize}
+                    onChange={(e) => setFormData(prev => ({ ...prev, farmSize: e.target.value }))}
+                    placeholder="5.0"
+                    data-testid="input-farm-size"
+                  />
+                </div>
+
+                <div>
+                  <Label>Primary Crops</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {crops.map((crop) => (
+                      <div key={crop.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={crop.id}
+                          checked={formData.primaryCrops.includes(crop.id)}
+                          onCheckedChange={() => handleCropToggle(crop.id)}
+                          data-testid={`checkbox-crop-${crop.id}`}
+                        />
+                        <Label htmlFor={crop.id} className="text-sm">{crop.name}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="language">Preferred Language</Label>
+                  <Select 
+                    value={formData.language} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}
+                  >
+                    <SelectTrigger data-testid="select-language">
+                      <SelectValue placeholder="Select Language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="hi">हिन्दी</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Button 
+                type="submit"
+                className="w-full font-bold text-lg py-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300" 
+                disabled={updateUserMutation.isPending || !otpVerified}
+                data-testid="button-complete-onboarding"
+              >
+                {updateUserMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Profile...
+                  </>
+                ) : (
+                  "Complete Registration & Get Started"
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </motion.div>

@@ -235,10 +235,10 @@ export default function CropDetect() {
 
       {/* Detection Result Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-md" data-testid="detection-modal">
-          <div className="p-6">
-            {!detectionResult ? (
-              // Analysis in progress
+        <DialogContent className="max-w-md max-h-[80vh] flex flex-col" data-testid="detection-modal">
+          {!detectionResult ? (
+            // Analysis in progress
+            <div className="p-6">
               <motion.div 
                 className="text-center"
                 initial={{ opacity: 0 }}
@@ -256,11 +256,14 @@ export default function CropDetect() {
                   Analyzing crop image using AI...
                 </p>
               </motion.div>
-            ) : (
-              // Detection Result
+            </div>
+          ) : (
+            // Detection Result with ScrollArea
+            <ScrollArea className="flex-1 max-h-[70vh]">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                className="p-6"
                 data-testid="detection-result"
               >
                 {/* Uploaded Image - First */}
@@ -379,8 +382,8 @@ export default function CropDetect() {
                   </Button>
                 </div>
               </motion.div>
-            )}
-          </div>
+            </ScrollArea>
+          )}
         </DialogContent>
       </Dialog>
 
