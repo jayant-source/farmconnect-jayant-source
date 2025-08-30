@@ -74,18 +74,6 @@ export default function CropDetect() {
     onSuccess: (data) => {
       setDetectionResult(data.result);
       setAnalysisProgress(100);
-      // Automatically open chat after successful analysis
-      setTimeout(() => {
-        setIsChatOpen(true);
-        // Add a contextual message about the detection
-        const contextMessage: ChatMessage = {
-          id: Date.now().toString() + "_context",
-          text: `I've analyzed your crop image and detected ${data.result.diseaseName}. Feel free to ask me any questions about this disease, treatment options, or any other farming concerns you might have!`,
-          isUser: false,
-          timestamp: new Date(),
-        };
-        setChatMessages(prev => [...prev, contextMessage]);
-      }, 1500); // Wait 1.5 seconds after analysis completion
     },
     onError: (error) => {
       toast({
@@ -275,16 +263,20 @@ export default function CropDetect() {
                 animate={{ opacity: 1, y: 0 }}
                 data-testid="detection-result"
               >
-                <div className="text-center mb-6">
-                  {capturedImage && (
+                {/* Uploaded Image - First */}
+                {capturedImage && (
+                  <div className="mb-6">
                     <img 
                       src={capturedImage} 
                       alt="Analyzed crop" 
-                      className="w-32 h-32 mx-auto rounded-xl mb-4 object-cover"
+                      className="w-full rounded-lg shadow-md object-cover"
                       data-testid="analyzed-image"
                     />
-                  )}
-                  
+                  </div>
+                )}
+
+                {/* Disease Name and Severity */}
+                <div className="text-center mb-6">
                   <h3 className="text-xl font-semibold text-foreground mb-2" data-testid="disease-name">
                     {detectionResult.diseaseName}
                   </h3>
@@ -302,71 +294,89 @@ export default function CropDetect() {
                   )}
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-2" data-testid="symptoms-title">
-                      {t("detection.symptoms")}
-                    </h4>
-                    <p className="text-muted-foreground text-sm" data-testid="symptoms-text">
-                      {detectionResult.symptoms}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-2" data-testid="treatment-title">
-                      {t("detection.treatment")}
-                    </h4>
-                    <p className="text-muted-foreground text-sm" data-testid="treatment-text">
-                      {detectionResult.treatment}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-2" data-testid="confidence-title">
-                      {t("detection.confidence")}
-                    </h4>
-                    <div className="flex items-center">
-                      <Progress value={detectionResult.confidence} className="flex-1 mr-3" data-testid="confidence-bar" />
-                      <span className="text-sm font-medium" data-testid="confidence-value">
-                        {detectionResult.confidence}%
-                      </span>
-                    </div>
-                  </div>
+                {/* Symptoms - Second */}
+                <div className="mb-4">
+                  <h4 className="text-lg font-semibold text-gray-800 mt-4 mb-2" data-testid="symptoms-title">
+                    Symptoms Identified
+                  </h4>
+                  <p className="text-gray-600 text-sm" data-testid="symptoms-text">
+                    {detectionResult.symptoms}
+                  </p>
                 </div>
 
-                <div className="space-y-3 mt-6">
-                  {/* AI Chat Button - Primary Action */}
+                {/* Treatment - Third */}
+                <div className="mb-4">
+                  <h4 className="text-lg font-semibold text-gray-800 mt-4 mb-2" data-testid="treatment-title">
+                    Treatment Suggestions
+                  </h4>
+                  <p className="text-gray-600 text-sm" data-testid="treatment-text">
+                    {detectionResult.treatment}
+                  </p>
+                </div>
+
+                {/* Confidence Bar - Fourth */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-gray-800 mt-4 mb-2" data-testid="confidence-title">
+                    AI Confidence
+                  </h4>
+                  <div className="w-full bg-gray-200 rounded-lg overflow-hidden mb-2">
+                    <div 
+                      className="bg-green-500 h-4 rounded-lg" 
+                      style={{ width: `${detectionResult.confidence}%` }}
+                      data-testid="confidence-bar"
+                    ></div>
+                  </div>
+                  <p className="text-sm text-gray-600" data-testid="confidence-value">
+                    AI Confidence: {detectionResult.confidence}%
+                  </p>
+                </div>
+
+                {/* Ask AI Assistant Button - Fifth */}
+                <div className="mb-4">
                   <Button 
-                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-                    onClick={() => setIsChatOpen(true)}
+                    className="w-full bg-primary hover:bg-primary/90"
+                    onClick={() => {
+                      setIsChatOpen(true);
+                      // Add contextual message if not already present
+                      const hasContextMessage = chatMessages.some(msg => msg.id.includes("_context"));
+                      if (!hasContextMessage && detectionResult) {
+                        const contextMessage: ChatMessage = {
+                          id: Date.now().toString() + "_context",
+                          text: `I've analyzed your crop image and detected ${detectionResult.diseaseName}. Feel free to ask me any questions about this disease, treatment options, or any other farming concerns you might have!`,
+                          isUser: false,
+                          timestamp: new Date(),
+                        };
+                        setChatMessages(prev => [...prev, contextMessage]);
+                      }
+                    }}
                     data-testid="button-ask-ai"
                   >
                     <MessageCircle className="mr-2 h-4 w-4" />
-                    Ask AI About This Disease
+                    Ask AI Assistant
                   </Button>
-                  
-                  {/* Secondary Actions */}
-                  <div className="flex gap-3">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={handleSaveReport}
-                      disabled={saveReportMutation.isPending}
-                      data-testid="button-save-report"
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      {t("detection.saveReport")}
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="flex-1"
-                      onClick={handleShare}
-                      data-testid="button-share"
-                    >
-                      <Share className="mr-2 h-4 w-4" />
-                      {t("detection.share")}
-                    </Button>
-                  </div>
+                </div>
+                
+                {/* Secondary Actions */}
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={handleSaveReport}
+                    disabled={saveReportMutation.isPending}
+                    data-testid="button-save-report"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    {t("detection.saveReport")}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleShare}
+                    data-testid="button-share"
+                  >
+                    <Share className="mr-2 h-4 w-4" />
+                    {t("detection.share")}
+                  </Button>
                 </div>
               </motion.div>
             )}
