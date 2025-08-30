@@ -11,31 +11,31 @@ interface WeatherResponse {
   icon: string;
 }
 
-interface WeatherAPIData {
-  location: {
-    name: string;
-    region: string;
-    country: string;
-  };
-  current: {
-    temp_c: number;
-    condition: {
-      text: string;
-      icon: string;
-      code: number;
-    };
+interface OpenWeatherAPIData {
+  name: string;
+  main: {
+    temp: number;
     humidity: number;
-    wind_kph: number;
-    feelslike_c: number;
-    uv: number;
+    feels_like: number;
+  };
+  weather: Array<{
+    main: string;
+    description: string;
+    icon: string;
+  }>;
+  wind: {
+    speed: number;
+  };
+  sys: {
+    country: string;
   };
 }
 
 export async function getCurrentWeather(location: string): Promise<WeatherResponse> {
-  const apiKey = process.env.WEATHERAPI_KEY;
+  const apiKey = process.env.OPENWEATHER_API_KEY;
   
   if (!apiKey) {
-    console.log("WeatherAPI key not configured, using mock data");
+    console.log("OpenWeather API key not configured, using mock data");
     return getMockWeatherData(location);
   }
 
@@ -46,25 +46,25 @@ export async function getCurrentWeather(location: string): Promise<WeatherRespon
       return cached.weatherData as WeatherResponse;
     }
 
-    // Fetch from WeatherAPI.com
+    // Fetch from OpenWeather API
     const response = await fetch(
-      `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(location)}&aqi=no`
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(location)}&appid=${apiKey}&units=metric`
     );
 
     if (!response.ok) {
-      throw new Error(`Weather API error: ${response.status}`);
+      throw new Error(`OpenWeather API error: ${response.status}`);
     }
 
-    const data: WeatherAPIData = await response.json();
+    const data: OpenWeatherAPIData = await response.json();
     
     const weatherResponse: WeatherResponse = {
-      location: `${data.location.name}, ${data.location.region}`,
-      temperature: Math.round(data.current.temp_c),
-      condition: data.current.condition.text,
-      humidity: data.current.humidity,
-      windSpeed: Math.round(data.current.wind_kph),
-      description: getFarmingAdvice(data.current.condition.text, data.current.temp_c, data.current.humidity),
-      icon: getWeatherIconFromCondition(data.current.condition.text),
+      location: `${data.name}, ${data.sys.country}`,
+      temperature: Math.round(data.main.temp),
+      condition: data.weather[0].main,
+      humidity: data.main.humidity,
+      windSpeed: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
+      description: getFarmingAdvice(data.weather[0].main, data.main.temp, data.main.humidity),
+      icon: data.weather[0].icon,
     };
 
     // Cache the result
@@ -72,7 +72,7 @@ export async function getCurrentWeather(location: string): Promise<WeatherRespon
 
     return weatherResponse;
   } catch (error) {
-    console.error("Weather API error:", error);
+    console.error("OpenWeather API error:", error);
     // Fallback to mock data on API failure
     return getMockWeatherData(location);
   }

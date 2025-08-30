@@ -19,10 +19,64 @@ interface MandiAPIResponse {
 export async function getMandiPrices(market?: string, date?: string): Promise<MandiPrice[]> {
   const govApiKey = process.env.GOV_MANDI_API_KEY;
   
-  console.log("Government Mandi API is currently broken (as of 2025), using enhanced mock data");
-  // NOTE: Official data.gov.in mandi API is not functional as of August 2025
-  // Returning enhanced mock data that represents realistic Indian market prices
-  return await getCachedMandiPrices(market, date);
+  if (!govApiKey) {
+    console.log("Government Mandi API key not configured, using mock data");
+    return generateMockMandiPrices(market);
+  }
+
+  try {
+    // Try to fetch from actual government API
+    const apiUrl = buildMandiApiUrl(market, date, govApiKey);
+    console.log("Fetching from Government Mandi API:", apiUrl);
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'FarmConnect/1.0'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Government API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: MandiAPIResponse = await response.json();
+    
+    if (!data.records || data.records.length === 0) {
+      console.log("No records from Government API, using mock data");
+      return generateMockMandiPrices(market);
+    }
+
+    // Convert API data to our format
+    const mandiPrices: MandiPrice[] = data.records.map(record => ({
+      id: randomUUID(),
+      market: record.market,
+      state: record.state,
+      commodity: record.commodity,
+      variety: record.variety || null,
+      grade: record.grade,
+      minPrice: record.min_price || null,
+      maxPrice: record.max_price || null,
+      modalPrice: record.modal_price || null,
+      priceUnit: "per quintal",
+      reportDate: new Date(record.price_date),
+      createdAt: new Date(),
+    }));
+
+    // Cache the results
+    try {
+      await storage.saveMandiPrices(mandiPrices);
+    } catch (storageError) {
+      console.error("Failed to cache mandi prices:", storageError);
+      // Continue without caching if database is not available
+    }
+
+    return mandiPrices;
+  } catch (error) {
+    console.error("Government Mandi API error:", error);
+    // Fallback to mock data
+    return generateMockMandiPrices(market);
+  }
 }
 
 function buildMandiApiUrl(market?: string, date?: string, apiKey?: string): string {
