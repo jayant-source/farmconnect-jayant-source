@@ -9,6 +9,7 @@ import { analyzeImage } from "./services/gemini";
 import { getCurrentWeather } from "./services/weather";
 import { getMandiPrices } from "./services/mandi";
 import { saveImageLocally } from "./services/fileUpload";
+import { analyzeCropImage } from "./services/pytorchService";
 // Demo OTP system - always accepts "0000" as valid OTP
 function isValidPhoneNumber(phone: string): boolean {
   // Basic phone validation - should have digits and optional country code
@@ -260,20 +261,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       let detectionResult;
-      const hasGeminiKey = !!process.env.GEMINI_API_KEY;
+      let isRealResult = false;
+      let analysisMethod = "mock";
       
-      if (hasGeminiKey) {
-        try {
-          // Use Gemini for real detection
-          detectionResult = await analyzeImage(req.file.buffer);
-        } catch (geminiError) {
-          console.error("Gemini analysis failed:", geminiError);
-          // Fallback to mock result
-          detectionResult = getMockDetectionResult();
+      // Priority 1: Try PyTorch model first
+      try {
+        console.log("Attempting PyTorch disease detection...");
+        detectionResult = await analyzeCropImage(req.file.buffer);
+        
+        if (detectionResult && !detectionResult.error) {
+          isRealResult = true;
+          analysisMethod = "pytorch";
+          console.log("PyTorch analysis successful");
+        } else {
+          throw new Error(detectionResult?.error || "PyTorch analysis returned error");
         }
-      } else {
-        // Use mock detection result
-        detectionResult = getMockDetectionResult();
+      } catch (pytorchError) {
+        console.error("PyTorch analysis failed:", pytorchError);
+        
+        // Priority 2: Fallback to Gemini API
+        const hasGeminiKey = !!process.env.GEMINI_API_KEY;
+        if (hasGeminiKey) {
+          try {
+            console.log("Falling back to Gemini analysis...");
+            detectionResult = await analyzeImage(req.file.buffer);
+            isRealResult = true;
+            analysisMethod = "gemini";
+            console.log("Gemini analysis successful");
+          } catch (geminiError) {
+            console.error("Gemini analysis also failed:", geminiError);
+            // Fallback to mock result
+            detectionResult = getMockDetectionResult();
+            analysisMethod = "mock";
+          }
+        } else {
+          // Priority 3: Use mock detection result
+          console.log("No AI services available, using mock result");
+          detectionResult = getMockDetectionResult();
+          analysisMethod = "mock";
+        }
       }
       
       // Save detection report to database
@@ -286,14 +312,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         confidence: detectionResult.confidence,
         symptoms: detectionResult.symptoms,
         treatment: detectionResult.treatment,
-        isMockResult: !hasGeminiKey,
+        isMockResult: analysisMethod === "mock",
       });
       
       res.json({
         success: true,
         result: {
           ...detectionResult,
-          isMockResult: !hasGeminiKey,
+          analysisMethod,
+          isMockResult: analysisMethod === "mock",
+          isPytorchResult: analysisMethod === "pytorch",
+          isGeminiResult: analysisMethod === "gemini",
         },
         reportId: report.id,
       });
