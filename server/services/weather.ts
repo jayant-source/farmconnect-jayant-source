@@ -11,27 +11,31 @@ interface WeatherResponse {
   icon: string;
 }
 
-interface OpenWeatherData {
-  name: string;
-  main: {
-    temp: number;
-    humidity: number;
+interface WeatherAPIData {
+  location: {
+    name: string;
+    region: string;
+    country: string;
   };
-  weather: Array<{
-    main: string;
-    description: string;
-    icon: string;
-  }>;
-  wind: {
-    speed: number;
+  current: {
+    temp_c: number;
+    condition: {
+      text: string;
+      icon: string;
+      code: number;
+    };
+    humidity: number;
+    wind_kph: number;
+    feelslike_c: number;
+    uv: number;
   };
 }
 
 export async function getCurrentWeather(location: string): Promise<WeatherResponse> {
-  const apiKey = process.env.OPENWEATHER_API_KEY;
+  const apiKey = process.env.WEATHERAPI_KEY;
   
   if (!apiKey) {
-    console.log("OpenWeather API key not configured, using mock data");
+    console.log("WeatherAPI key not configured, using mock data");
     return getMockWeatherData(location);
   }
 
@@ -42,25 +46,25 @@ export async function getCurrentWeather(location: string): Promise<WeatherRespon
       return cached.weatherData as WeatherResponse;
     }
 
-    // Fetch from OpenWeather API
+    // Fetch from WeatherAPI.com
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(location)}&appid=${apiKey}&units=metric`
+      `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(location)}&aqi=no`
     );
 
     if (!response.ok) {
       throw new Error(`Weather API error: ${response.status}`);
     }
 
-    const data: OpenWeatherData = await response.json();
+    const data: WeatherAPIData = await response.json();
     
     const weatherResponse: WeatherResponse = {
-      location: data.name,
-      temperature: Math.round(data.main.temp),
-      condition: data.weather[0].main,
-      humidity: data.main.humidity,
-      windSpeed: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
-      description: getFarmingAdvice(data.weather[0].main, data.main.temp, data.main.humidity),
-      icon: data.weather[0].icon,
+      location: `${data.location.name}, ${data.location.region}`,
+      temperature: Math.round(data.current.temp_c),
+      condition: data.current.condition.text,
+      humidity: data.current.humidity,
+      windSpeed: Math.round(data.current.wind_kph),
+      description: getFarmingAdvice(data.current.condition.text, data.current.temp_c, data.current.humidity),
+      icon: getWeatherIconFromCondition(data.current.condition.text),
     };
 
     // Cache the result
@@ -123,6 +127,20 @@ function getWeatherIcon(condition: string): string {
   if (lowerCondition.includes("storm")) return "11d";
   if (lowerCondition.includes("snow")) return "13d";
   if (lowerCondition.includes("mist") || lowerCondition.includes("fog")) return "50d";
+  
+  return "01d"; // Default to sunny
+}
+
+function getWeatherIconFromCondition(condition: string): string {
+  const lowerCondition = condition.toLowerCase();
+  
+  if (lowerCondition.includes("sunny") || lowerCondition.includes("clear")) return "01d";
+  if (lowerCondition.includes("partly cloudy") || lowerCondition.includes("partly sunny")) return "02d";
+  if (lowerCondition.includes("cloudy") || lowerCondition.includes("overcast")) return "03d";
+  if (lowerCondition.includes("rain") || lowerCondition.includes("drizzle") || lowerCondition.includes("shower")) return "10d";
+  if (lowerCondition.includes("thunder") || lowerCondition.includes("storm")) return "11d";
+  if (lowerCondition.includes("snow") || lowerCondition.includes("blizzard")) return "13d";
+  if (lowerCondition.includes("mist") || lowerCondition.includes("fog") || lowerCondition.includes("haze")) return "50d";
   
   return "01d"; // Default to sunny
 }
