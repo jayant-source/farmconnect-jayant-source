@@ -394,33 +394,7 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* Floating Action Hint */}
-      <motion.div
-        className="fixed bottom-24 right-6 z-10"
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 2, duration: 0.5 }}
-      >
-        <motion.div
-          className="bg-primary text-primary-foreground p-3 rounded-full shadow-lg cursor-pointer"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          animate={{ 
-            y: [0, -5, 0],
-            boxShadow: [
-              "0 4px 15px rgba(0,0,0,0.1)",
-              "0 8px 25px rgba(0,0,0,0.15)",
-              "0 4px 15px rgba(0,0,0,0.1)"
-            ]
-          }}
-          transition={{ 
-            y: { duration: 2, repeat: Infinity },
-            boxShadow: { duration: 2, repeat: Infinity }
-          }}
-        >
-          <TrendingUp className="w-5 h-5" />
-        </motion.div>
-      </motion.div>
+      
     </div>
   );
 }
