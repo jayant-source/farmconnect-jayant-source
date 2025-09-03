@@ -1,20 +1,29 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
-import { Camera, CloudSun, BarChart3, Users, Bell, User, Leaf, TrendingUp, Calendar, AlertTriangle, Heart } from "lucide-react";
+import { 
+  Camera, 
+  CloudSun, 
+  BarChart3, 
+  Users, 
+  Bell,
+  Leaf, 
+  TrendingUp, 
+  Calendar,
+  MapPin,
+  Plus,
+  Eye,
+  ArrowRight
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
-import WeatherWidget from "@/components/weather-widget";
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { scrollY } = useScroll();
-  const headerY = useTransform(scrollY, [0, 200], [0, -50]);
-  const headerOpacity = useTransform(scrollY, [0, 200], [1, 0.8]);
 
   const { data: recentReports = [] } = useQuery({
     queryKey: ["/api/disease-reports/recent"],
@@ -26,70 +35,47 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  const { data: weatherData } = useQuery({
+    queryKey: ["/api/weather/current", user?.location || "alwar"],
+    enabled: !!user,
+  });
+
   const quickActions = [
     {
       icon: Camera,
-      title: t("dashboard.detectDisease"),
-      description: "AI-powered crop analysis",
+      title: "Crop Detection",
+      description: "Scan your crops for diseases",
       href: "/crop-detect",
-      color: "bg-gradient-to-br from-emerald-500/20 to-teal-500/20",
-      iconColor: "text-emerald-400",
-      accent: "border-emerald-500/30",
+      bgColor: "bg-green-50",
+      iconColor: "text-green-600",
       testId: "action-detect-disease",
     },
     {
-      icon: CloudSun,
-      title: t("dashboard.weather"),
-      description: "Real-time weather updates",
-      href: "/weather",
-      color: "bg-gradient-to-br from-blue-500/20 to-cyan-500/20",
-      iconColor: "text-blue-400",
-      accent: "border-blue-500/30",
-      testId: "action-weather",
-    },
-    {
       icon: BarChart3,
-      title: t("dashboard.mandiPrices"),
-      description: "Live market prices",
+      title: "Market Prices",
+      description: "Check live commodity prices",
       href: "/mandi-prices",
-      color: "bg-gradient-to-br from-amber-500/20 to-orange-500/20",
-      iconColor: "text-amber-400",
-      accent: "border-amber-500/30",
+      bgColor: "bg-orange-50",
+      iconColor: "text-orange-600",
       testId: "action-mandi-prices",
     },
     {
+      icon: CloudSun,
+      title: "Weather",
+      description: "Get weather forecasts",
+      href: "/weather",
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
+      testId: "action-weather",
+    },
+    {
       icon: Users,
-      title: t("dashboard.community"),
-      description: "Connect with farmers",
+      title: "Community",
+      description: "Connect with other farmers",
       href: "/community",
-      color: "bg-gradient-to-br from-purple-500/20 to-pink-500/20",
-      iconColor: "text-purple-400",
-      accent: "border-purple-500/30",
+      bgColor: "bg-purple-50",
+      iconColor: "text-purple-600",
       testId: "action-community",
-    },
-  ];
-
-  const stats = [
-    {
-      label: "Disease Reports",
-      value: Array.isArray(recentReports) ? recentReports.length : 0,
-      icon: Leaf,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/20",
-    },
-    {
-      label: "Community Members",
-      value: (communityStats as any)?.totalFarmers || "2.5K",
-      icon: Users,
-      color: "text-purple-400",
-      bg: "bg-purple-500/20",
-    },
-    {
-      label: "Active Posts",
-      value: (communityStats as any)?.activePosts || "157",
-      icon: TrendingUp,
-      color: "text-blue-400",
-      bg: "bg-blue-500/20",
     },
   ];
 
@@ -100,328 +86,218 @@ export default function Dashboard() {
     return "Good Evening";
   };
 
+  const getWeatherIcon = (temp: number) => {
+    if (temp > 30) return "☀️";
+    if (temp > 20) return "⛅";
+    return "🌤️";
+  };
+
   return (
-    <div className="min-h-screen bg-background pb-20 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-      <motion.div
-        className="absolute top-20 right-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-morphing"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 3, delay: 1 }}
-      />
-      {/* Enhanced Header with Parallax */}
-      <motion.header 
-        className="relative glass-dark border-b border-border/50 backdrop-blur-lg z-10"
-        style={{ y: headerY, opacity: headerOpacity }}
-        data-testid="dashboard-header"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5"></div>
-        <div className="relative p-6">
-          <div className="flex items-center justify-between">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="flex items-center space-x-4">
-                <motion.div
-                  className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Leaf className="text-white text-xl" />
-                </motion.div>
-                <div>
-                  <motion.h1 
-                    className="text-2xl font-bold text-gray-800 dark:text-gray-100" 
-                    data-testid="welcome-message"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    {getGreeting()}, {user?.name || "Farmer"}!
-                  </motion.h1>
-                  <motion.p 
-                    className="text-muted-foreground flex items-center" 
-                    data-testid="user-location"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {new Date().toLocaleDateString()} • {user?.location || "Farm Location"}
-                  </motion.p>
-                </div>
-              </div>
-            </motion.div>
-            <motion.div 
-              className="flex items-center space-x-2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="relative hover:bg-primary/10 transition-colors"
-                  data-testid="button-notifications"
-                >
-                  <Bell className="h-5 w-5" />
-                  <motion.div
-                    className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="hover:bg-primary/10 transition-colors"
-                  data-testid="button-profile"
-                >
-                  <User className="h-5 w-5" />
-                </Button>
-              </motion.div>
-            </motion.div>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Clean Header */}
+      <header className="bg-white border-b border-border px-6 py-4" data-testid="dashboard-header">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground" data-testid="welcome-message">
+              {getGreeting()}, {user?.name || "Farmer"}!
+            </h1>
+            <div className="flex items-center text-muted-foreground text-sm mt-1" data-testid="user-location">
+              <MapPin className="w-4 h-4 mr-1" />
+              {user?.location || "Farm Location"} • {new Date().toLocaleDateString()}
+            </div>
           </div>
+          <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">
+            <Bell className="h-5 w-5" />
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+          </Button>
         </div>
-      </motion.header>
+      </header>
 
-      {/* Stats Cards */}
-      <div className="p-6">
-        <motion.div 
-          className="grid grid-cols-3 gap-4 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              whileHover={{ scale: 1.08, y: -8, rotateY: 5 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className="premium-card rounded-2xl p-6 hover-glow group relative overflow-hidden">
-                <div className={`absolute inset-0 ${stat.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                <div className="relative z-10 text-center">
-                  <motion.div 
-                    className={`w-14 h-14 ${stat.bg} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
-                    whileHover={{ scale: 1.2, rotate: 10 }}
-                    transition={{ type: "spring", stiffness: 400 }}
-                  >
-                    <stat.icon className={`text-2xl ${stat.color}`} />
-                  </motion.div>
-                  <div className="text-3xl font-bold gradient-text-primary mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+      <div className="p-6 space-y-6">
+        {/* Weather Card */}
+        {weatherData && (
+          <Card className="farm-card" data-testid="weather-card">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Today's Weather</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {weatherData.location}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl mb-1">
+                    {getWeatherIcon(weatherData.temperature)}
+                  </div>
+                  <div className="text-2xl font-semibold text-foreground">
+                    {weatherData.temperature}°C
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {weatherData.condition}
+                  </div>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Enhanced Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center" data-testid="quick-actions-title">
-            <motion.div
-              className="w-1 h-6 bg-gradient-to-b from-primary to-accent mr-3 rounded-full"
-              animate={{ scaleY: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            {t("dashboard.quickActions")}
+        {/* Quick Stats */}
+        <div className="grid grid-cols-3 gap-4">
+          <Card className="farm-card text-center" data-testid="stats-reports">
+            <CardContent className="p-4">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Leaf className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="text-xl font-semibold text-foreground">
+                {Array.isArray(recentReports) ? recentReports.length : 0}
+              </div>
+              <div className="text-xs text-muted-foreground">Reports</div>
+            </CardContent>
+          </Card>
+
+          <Card className="farm-card text-center" data-testid="stats-community">
+            <CardContent className="p-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Users className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="text-xl font-semibold text-foreground">
+                {(communityStats as any)?.totalFarmers || "2.5K"}
+              </div>
+              <div className="text-xs text-muted-foreground">Farmers</div>
+            </CardContent>
+          </Card>
+
+          <Card className="farm-card text-center" data-testid="stats-posts">
+            <CardContent className="p-4">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="text-xl font-semibold text-foreground">
+                {(communityStats as any)?.activePosts || "157"}
+              </div>
+              <div className="text-xs text-muted-foreground">Posts</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div>
+          <h2 className="section-header" data-testid="quick-actions-title">
+            <Plus className="h-5 w-5" />
+            Quick Actions
           </h2>
           <div className="grid grid-cols-2 gap-4">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={action.title}
-                initial={{ opacity: 0, y: 30, rotate: -5 }}
-                animate={{ opacity: 1, y: 0, rotate: 0 }}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: index * 0.1 + 0.5,
-                  type: "spring",
-                  stiffness: 100
-                }}
-                whileHover={{ 
-                  scale: 1.03, 
-                  y: -8,
-                  rotate: 1,
-                  transition: { type: "spring", stiffness: 300 }
-                }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <Link href={action.href}>
-                  <div className={`premium-card rounded-3xl p-8 hover-glow group cursor-pointer relative overflow-hidden`} data-testid={action.testId}>
-                    {/* Background Gradient */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-50`} />
-                    
-                    <div className="relative z-10 text-center">
-                      <motion.div 
-                        className={`w-20 h-20 bg-black/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl group-hover:shadow-primary/25 transition-all duration-300`}
-                        whileHover={{ scale: 1.15, rotate: 10, y: -5 }}
-                        transition={{ type: "spring", stiffness: 400 }}
-                      >
-                        <action.icon className={`text-3xl ${action.iconColor}`} />
-                      </motion.div>
-                      
-                      <h3 className="font-bold text-xl text-foreground mb-3 group-hover:gradient-text-primary transition-all duration-300">{action.title}</h3>
-                      <p className="text-sm text-muted-foreground group-hover:text-muted-foreground/90 leading-relaxed">{action.description}</p>
-                      
-                      {/* Premium glow effects */}
-                      <motion.div
-                        className="absolute top-4 right-4 w-3 h-3 bg-primary rounded-full opacity-0 group-hover:opacity-100"
-                        animate={{ 
-                          scale: [0, 1.2, 0],
-                          rotate: [0, 180, 360]
-                        }}
-                        transition={{ 
-                          duration: 2,
-                          repeat: Infinity,
-                          delay: index * 0.3
-                        }}
-                      />
-                      
-                      <motion.div
-                        className="absolute bottom-4 left-4 w-2 h-2 bg-accent rounded-full opacity-0 group-hover:opacity-100"
-                        animate={{ 
-                          scale: [0, 1, 0],
-                          opacity: [0, 1, 0]
-                        }}
-                        transition={{ 
-                          duration: 1.5,
-                          repeat: Infinity,
-                          delay: index * 0.4 + 0.5
-                        }}
-                      />
+            {quickActions.map((action) => (
+              <Link key={action.title} href={action.href}>
+                <Card 
+                  className="farm-card cursor-pointer h-full" 
+                  data-testid={action.testId}
+                >
+                  <CardContent className="p-4 flex flex-col items-center text-center">
+                    <div className={`w-12 h-12 ${action.bgColor} rounded-lg flex items-center justify-center mb-3`}>
+                      <action.icon className={`h-6 w-6 ${action.iconColor}`} />
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
+                    <h3 className="font-semibold text-foreground mb-1 text-sm">
+                      {action.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {action.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
-        </motion.div>
-      </div>
+        </div>
 
-      {/* Enhanced Weather Widget */}
-      <motion.div 
-        className="px-6 mb-6"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.8 }}
-      >
-        <WeatherWidget />
-      </motion.div>
+        {/* Recent Disease Reports */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="section-header" data-testid="recent-reports-title">
+              <Eye className="h-5 w-5" />
+              Recent Reports
+            </h2>
+            {Array.isArray(recentReports) && recentReports.length > 0 && (
+              <Link href="/crop-detect">
+                <Button variant="ghost" size="sm" className="text-xs">
+                  View All <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+            )}
+          </div>
 
-      {/* Enhanced Recent Reports */}
-      <motion.div 
-        className="px-6 mb-6"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 1 }}
-      >
-        <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center" data-testid="recent-reports-title">
-          <motion.div
-            className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-teal-500 mr-3 rounded-full"
-            animate={{ scaleY: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-          />
-          {t("dashboard.recentReports")}
-        </h2>
-        <div className="space-y-3">
           {Array.isArray(recentReports) && recentReports.length > 0 ? (
-            recentReports.map((report: any, index: number) => (
-              <motion.div
-                key={report.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                whileHover={{ scale: 1.02, x: 10 }}
-              >
-                <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-emerald-500 bg-gradient-to-r from-card to-card/50" data-testid={`report-${report.id}`}>
-                  <CardContent className="p-4 flex items-center">
-                    <motion.div 
-                      className="w-16 h-16 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-2xl mr-4 flex items-center justify-center shadow-lg"
-                      whileHover={{ rotate: 10, scale: 1.1 }}
-                    >
-                      <Leaf className="text-emerald-600 text-xl" />
-                    </motion.div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground" data-testid={`report-disease-${report.id}`}>
-                        {report.diseaseName}
-                      </h4>
-                      <p className="text-muted-foreground text-sm flex items-center" data-testid={`report-details-${report.id}`}>
-                        <AlertTriangle className="w-3 h-3 mr-1" />
-                        {report.cropType} • {new Date(report.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
+            <div className="space-y-3">
+              {recentReports.slice(0, 3).map((report: any) => (
+                <Card key={report.id} className="farm-card" data-testid={`report-${report.id}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                          <Leaf className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-foreground text-sm" data-testid={`report-disease-${report.id}`}>
+                            {report.diseaseName}
+                          </h4>
+                          <p className="text-xs text-muted-foreground" data-testid={`report-details-${report.id}`}>
+                            {report.cropType} • {new Date(report.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
                       <Badge 
-                        variant={report.severity === "High" ? "destructive" : report.severity === "Medium" ? "default" : "secondary"}
-                        className="shadow-sm"
+                        variant={report.severity === "High" ? "destructive" : 
+                                report.severity === "Medium" ? "default" : "secondary"}
+                        className="text-xs"
                         data-testid={`report-severity-${report.id}`}
                       >
                         {report.severity}
                       </Badge>
-                    </motion.div>
+                    </div>
                   </CardContent>
                 </Card>
-              </motion.div>
-            ))
+              ))}
+            </div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Card className="border-2 border-dashed border-muted-foreground/30 bg-gradient-to-br from-card/50 to-muted/10">
-                <CardContent className="p-8 text-center">
-                  <motion.div
-                    animate={{ 
-                      y: [0, -10, 0],
-                      rotate: [0, 5, -5, 0]
-                    }}
-                    transition={{ 
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  >
-                    <Leaf className="mx-auto h-16 w-16 text-muted-foreground/60 mb-4" />
-                  </motion.div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Ready to start farming smarter?</h3>
-                  <p className="text-muted-foreground mb-6">No disease reports yet. Start by detecting crops and join thousands of farmers using AI!</p>
-                  <Link href="/crop-detect">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Button 
-                        className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transition-all duration-300"
-                        data-testid="button-start-detecting"
-                      >
-                        <Camera className="mr-2 h-4 w-4" />
-                        Start Your First Detection
-                        <Heart className="ml-2 h-4 w-4" />
-                      </Button>
-                    </motion.div>
-                  </Link>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <Card className="farm-card border-dashed" data-testid="no-reports">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Camera className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Start Crop Detection</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  No disease reports yet. Scan your crops to get started!
+                </p>
+                <Link href="/crop-detect">
+                  <Button className="btn-farm-primary" data-testid="button-start-detecting">
+                    <Camera className="mr-2 h-4 w-4" />
+                    Scan Crops
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           )}
         </div>
-      </motion.div>
+
+        {/* Farmer Marketplace Quick Access */}
+        <Card className="farm-card bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Farmer Marketplace</h3>
+                <p className="text-sm text-muted-foreground">
+                  List your produce, get bids, and arrange logistics
+                </p>
+              </div>
+              <Link href="/farmer-marketplace">
+                <Button className="btn-farm-primary">
+                  Visit <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
