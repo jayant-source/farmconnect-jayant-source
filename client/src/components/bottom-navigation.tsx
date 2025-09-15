@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
-import { Home, Camera, BarChart3, Gavel, User, MessageCircle } from "lucide-react";
+import { Home, Camera, BarChart3, Gavel, User, MessageCircle, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
@@ -27,6 +27,12 @@ const navigationItems = [
     href: "/farmer-marketplace",
     labelKey: "nav.marketplace",
     testId: "nav-marketplace",
+  },
+  {
+    icon: Sun,
+    href: "/solar-income",
+    labelKey: "nav.solar",
+    testId: "nav-solar",
   },
   {
     icon: User,

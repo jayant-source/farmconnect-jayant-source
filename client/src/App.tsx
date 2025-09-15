@@ -149,6 +149,13 @@ function Router() {
           </PageWrapper>
         </Route>
         
+        <Route path="/solar-income">
+          <PageWrapper>
+            {isAuthenticated ? <SolarIncomePlanner /> : <Auth />}
+          </PageWrapper>
+        </Route>
+        
+        {/* Legacy redirect for old solar income planner URL */}
         <Route path="/solar-income-planner">
           <PageWrapper>
             {isAuthenticated ? <SolarIncomePlanner /> : <Auth />}
