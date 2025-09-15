@@ -24,6 +24,7 @@ import HelpAssistant from "@/pages/help-assistant";
 import Profile from "@/pages/profile";
 import GovernmentSchemes from "@/pages/government-schemes";
 import AIAssistant from "@/pages/ai-assistant";
+import SolarIncomePlanner from "@/pages/solar-income-planner";
 import NotFound from "@/pages/not-found";
 
 // Components
@@ -145,6 +146,12 @@ function Router() {
         <Route path="/ai-assistant">
           <PageWrapper>
             {isAuthenticated ? <AIAssistant /> : <Auth />}
+          </PageWrapper>
+        </Route>
+        
+        <Route path="/solar-income-planner">
+          <PageWrapper>
+            {isAuthenticated ? <SolarIncomePlanner /> : <Auth />}
           </PageWrapper>
         </Route>
         
