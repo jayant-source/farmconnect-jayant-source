@@ -216,3 +216,34 @@ export type Bid = typeof bids.$inferSelect;
 export type InsertBid = z.infer<typeof insertBidSchema>;
 export type LogisticsOrder = typeof logisticsOrders.$inferSelect;
 export type InsertLogisticsOrder = z.infer<typeof insertLogisticsOrderSchema>;
+
+// Solar Income Calculator Schema
+export const solarCalculatorSchema = z.object({
+  fieldSize: z.string()
+    .min(1, "Field size is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Field size must be a positive number"),
+  fieldSizeUnit: z.enum(["acre", "hectare"]).default("acre"),
+  currentCropIncome: z.string()
+    .min(1, "Current crop income is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Current crop income must be a positive number"),
+  solarPanelCapacity: z.string()
+    .min(1, "Solar panel capacity is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Solar panel capacity must be a positive number"),
+  sunlightHours: z.string()
+    .min(1, "Sunlight hours is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0 && Number(val) <= 24, "Sunlight hours must be between 0 and 24"),
+  electricityRate: z.string()
+    .min(1, "Electricity rate is required")
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Electricity rate must be a positive number"),
+  installationCost: z.string()
+    .optional()
+    .refine((val) => !val || (!isNaN(Number(val)) && Number(val) >= 0), "Installation cost must be a positive number or zero"),
+  governmentSubsidy: z.string()
+    .optional()
+    .refine((val) => !val || (!isNaN(Number(val)) && Number(val) >= 0), "Government subsidy must be a positive number or zero"),
+  maintenanceCost: z.string()
+    .optional()
+    .refine((val) => !val || (!isNaN(Number(val)) && Number(val) >= 0), "Maintenance cost must be a positive number or zero")
+});
+
+export type SolarCalculatorForm = z.infer<typeof solarCalculatorSchema>;
