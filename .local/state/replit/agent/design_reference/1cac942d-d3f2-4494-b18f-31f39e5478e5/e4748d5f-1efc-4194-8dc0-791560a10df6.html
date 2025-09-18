@@ -1,0 +1,1260 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmConnect - Smart Farming Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "system-ui", "sans-serif"],
+                },
+                animation: {
+                    'blob': 'blob 7s infinite',
+                    'float': 'float 6s ease-in-out infinite',
+                    'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                }
+            },
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --background: hsl(142 84% 97%);
+            --foreground: hsl(142 10% 9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(142 10% 9%);
+            --primary: hsl(142 76% 36%);
+            --primary-foreground: hsl(355 100% 97%);
+            --secondary: hsl(142 30% 92%);
+            --secondary-foreground: hsl(142 10% 9%);
+            --muted: hsl(142 30% 92%);
+            --muted-foreground: hsl(142 5% 45%);
+            --accent: hsl(39 84% 56%);
+            --accent-foreground: hsl(355 100% 97%);
+            --destructive: hsl(0 72% 51%);
+            --destructive-foreground: hsl(355 100% 97%);
+            --border: hsl(142 30% 82%);
+            --input: hsl(142 30% 82%);
+            --ring: hsl(142 76% 36%);
+            --radius: 0.75rem;
+        }
+
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 69% 46%) 25%, hsl(39 84% 56%) 50%, hsl(199 89% 48%) 75%, hsl(142 76% 36%) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-morphism {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .blob {
+            background: linear-gradient(45deg, hsl(142 76% 36%), hsl(39 84% 56%));
+            filter: blur(40px);
+            animation: blob 7s infinite;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-background text-foreground font-sans">
+    <!-- @COMPONENT: App [Root component with routing logic] -->
+    <div id="app" class="min-h-screen">
+        
+        <!-- @COMPONENT: LandingHero [Main landing page with animated background] -->
+        <section id="landing" class="relative min-h-screen overflow-hidden gradient-bg">
+            <!-- Animated Background Elements -->
+            <div class="absolute inset-0">
+                <!-- @FUNCTIONALITY: tsParticles integration for floating agriculture-themed particles -->
+                <div class="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blob"></div>
+                <div class="absolute top-40 right-20 w-96 h-96 bg-accent/20 rounded-full blob" style="animation-delay: -2s;"></div>
+                <div class="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-500/20 rounded-full blob" style="animation-delay: -4s;"></div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="relative z-10 flex items-center justify-between p-6 lg:px-8">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-seedling text-primary text-xl"></i>
+                    </div>
+                    <span class="text-white font-bold text-xl">FarmConnect</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- @COMPONENT: LanguageToggle [Switch between English/Hindi] -->
+                    <button class="glass-morphism px-4 py-2 rounded-lg text-white hover:bg-white/30 transition-all duration-300">
+                        <i class="fas fa-globe mr-2"></i>
+                        <span data-bind="currentLanguage">EN</span>
+                    </button>
+                    <button class="bg-white text-primary px-6 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-300 font-medium">
+                        <span data-bind="t('login')">Login</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Hero Content -->
+            <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-32">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="text-white">
+                        <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+                            <span data-bind="t('hero.title')">Smart Farming</span>
+                            <br>
+                            <span class="text-accent">Made Simple</span>
+                        </h1>
+                        <p class="text-xl lg:text-2xl mb-8 text-white/90" data-bind="t('hero.subtitle')">
+                            Detect crop diseases, check weather, get market prices, and connect with fellow farmers - all in one place.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button class="bg-white text-primary px-8 py-4 rounded-xl hover:bg-gray-100 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                <i class="fas fa-mobile-alt mr-2"></i>
+                                <span data-bind="t('hero.getStarted')">Get Started</span>
+                            </button>
+                            <button class="glass-morphism px-8 py-4 rounded-xl hover:bg-white/30 transition-all duration-300 font-semibold text-lg">
+                                <i class="fas fa-play mr-2"></i>
+                                <span data-bind="t('hero.watchDemo')">Watch Demo</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hero Illustration -->
+                    <div class="relative">
+                        <!-- @FUNCTIONALITY: Lottie animation of farming activities -->
+                        <div class="relative z-10 bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl">
+                            <!-- Farmer with phone mockup -->
+                            <!-- A farmer in a field using a smartphone to capture crop images -->
+                            <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Farmer using smartphone in field" class="rounded-2xl shadow-lg w-full h-auto" />
+                        </div>
+                        <div class="absolute -top-4 -right-4 w-24 h-24 bg-accent rounded-full flex items-center justify-center shadow-lg animate-float">
+                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                        </div>
+                        <div class="absolute -bottom-4 -left-4 w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center shadow-lg animate-float" style="animation-delay: -2s;">
+                            <i class="fas fa-cloud-sun text-white text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Preview -->
+            <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pb-20">
+                <div class="grid md:grid-cols-4 gap-6">
+                    <!-- @MAP: features.map(feature => ( -->
+                    <div class="glass-morphism p-6 rounded-2xl text-white text-center hover:bg-white/30 transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-camera text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2" data-bind="t('features.cropDetection')">Crop Detection</h3>
+                        <p class="text-sm text-white/80" data-bind="t('features.cropDetectionDesc')">AI-powered disease identification</p>
+                    </div>
+
+                    <div class="glass-morphism p-6 rounded-2xl text-white text-center hover:bg-white/30 transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-cloud-sun text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2" data-bind="t('features.weather')">Weather</h3>
+                        <p class="text-sm text-white/80" data-bind="t('features.weatherDesc')">Real-time weather updates</p>
+                    </div>
+
+                    <div class="glass-morphism p-6 rounded-2xl text-white text-center hover:bg-white/30 transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-bar text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2" data-bind="t('features.mandiPrices')">Mandi Prices</h3>
+                        <p class="text-sm text-white/80" data-bind="t('features.mandiPricesDesc')">Live market rates</p>
+                    </div>
+
+                    <div class="glass-morphism p-6 rounded-2xl text-white text-center hover:bg-white/30 transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-users text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2" data-bind="t('features.community')">Community</h3>
+                        <p class="text-sm text-white/80" data-bind="t('features.communityDesc')">Connect with farmers</p>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: LandingHero -->
+
+        <!-- @COMPONENT: AuthPhone [Phone number and OTP authentication] -->
+        <section id="auth" class="hidden min-h-screen bg-background flex items-center justify-center p-6">
+            <div class="w-full max-w-md">
+                <div class="bg-card rounded-3xl shadow-2xl p-8 border border-border">
+                    <div class="text-center mb-8">
+                        <div class="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-mobile-alt text-white text-3xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-foreground mb-2" data-bind="t('auth.title')">Welcome to FarmConnect</h2>
+                        <p class="text-muted-foreground" data-bind="t('auth.subtitle')">Enter your phone number to get started</p>
+                    </div>
+
+                    <!-- @STATE: authStep:string = 'phone' | 'otp' -->
+                    <div id="phone-step">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('auth.phoneLabel')">Phone Number</label>
+                                <div class="relative">
+                                    <select class="absolute left-3 top-3 bg-transparent border-none text-muted-foreground text-sm">
+                                        <option>+91</option>
+                                    </select>
+                                    <input type="tel" placeholder="9876543210" class="w-full pl-16 pr-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background" data-bind="phoneNumber" />
+                                </div>
+                            </div>
+
+                            <button class="w-full bg-primary text-primary-foreground py-3 rounded-xl hover:bg-primary/90 transition-colors duration-300 font-semibold" data-event="click:sendOTP">
+                                <span data-bind="t('auth.sendOTP')">Send OTP</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="otp-step" class="hidden">
+                        <div class="space-y-6">
+                            <div class="text-center">
+                                <p class="text-muted-foreground mb-4" data-bind="t('auth.otpSent')">We've sent an OTP to <span data-bind="phoneNumber" class="font-semibold">+91 9876543210</span></p>
+                                <div class="text-xs text-accent bg-accent/10 p-2 rounded-lg" data-mock="true">
+                                    Demo: Use OTP 0000
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('auth.otpLabel')">Enter OTP</label>
+                                <div class="flex gap-3 justify-center">
+                                    <input type="text" maxlength="1" class="w-12 h-12 text-center border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-lg font-semibold" />
+                                    <input type="text" maxlength="1" class="w-12 h-12 text-center border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-lg font-semibold" />
+                                    <input type="text" maxlength="1" class="w-12 h-12 text-center border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-lg font-semibold" />
+                                    <input type="text" maxlength="1" class="w-12 h-12 text-center border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-lg font-semibold" />
+                                </div>
+                            </div>
+
+                            <button class="w-full bg-primary text-primary-foreground py-3 rounded-xl hover:bg-primary/90 transition-colors duration-300 font-semibold" data-event="click:verifyOTP">
+                                <span data-bind="t('auth.verify')">Verify & Continue</span>
+                            </button>
+
+                            <button class="w-full text-muted-foreground hover:text-foreground transition-colors duration-300" data-event="click:resendOTP">
+                                <span data-bind="t('auth.resendOTP')">Resend OTP</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: AuthPhone -->
+
+        <!-- @COMPONENT: OnboardingProfileForm [User profile setup] -->
+        <section id="onboarding" class="hidden min-h-screen bg-background p-6">
+            <div class="max-w-2xl mx-auto">
+                <div class="bg-card rounded-3xl shadow-xl p-8 border border-border">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-foreground mb-2" data-bind="t('onboarding.title')">Complete Your Profile</h2>
+                        <p class="text-muted-foreground" data-bind="t('onboarding.subtitle')">Help us personalize your farming experience</p>
+                    </div>
+
+                    <form class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('onboarding.name')">Full Name</label>
+                                <input type="text" placeholder="Enter your name" class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background" data-bind="user.name" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('onboarding.age')">Age</label>
+                                <input type="number" placeholder="25" class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background" data-bind="user.age" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('onboarding.location')">Farm Location</label>
+                            <input type="text" placeholder="Village, District, State" class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background" data-bind="user.location" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('onboarding.farmSize')">Farm Size (acres)</label>
+                            <input type="number" placeholder="5" class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background" data-bind="user.farmSize" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('onboarding.crops')">Primary Crops</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <!-- @MAP: crops.map(crop => ( -->
+                                <label class="flex items-center p-3 border border-input rounded-lg hover:bg-muted cursor-pointer">
+                                    <input type="checkbox" class="mr-3 text-primary focus:ring-primary" />
+                                    <span class="text-sm" data-bind="crop.name">Rice</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-input rounded-lg hover:bg-muted cursor-pointer">
+                                    <input type="checkbox" class="mr-3 text-primary focus:ring-primary" />
+                                    <span class="text-sm">Wheat</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-input rounded-lg hover:bg-muted cursor-pointer">
+                                    <input type="checkbox" class="mr-3 text-primary focus:ring-primary" />
+                                    <span class="text-sm">Cotton</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-input rounded-lg hover:bg-muted cursor-pointer">
+                                    <input type="checkbox" class="mr-3 text-primary focus:ring-primary" />
+                                    <span class="text-sm">Sugarcane</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-input rounded-lg hover:bg-muted cursor-pointer">
+                                    <input type="checkbox" class="mr-3 text-primary focus:ring-primary" />
+                                    <span class="text-sm">Maize</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-input rounded-lg hover:bg-muted cursor-pointer">
+                                    <input type="checkbox" class="mr-3 text-primary focus:ring-primary" />
+                                    <span class="text-sm">Others</span>
+                                </label>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('onboarding.language')">Preferred Language</label>
+                            <select class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background" data-bind="user.language">
+                                <option value="en">English</option>
+                                <option value="hi">हिंदी</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-primary text-primary-foreground py-4 rounded-xl hover:bg-primary/90 transition-colors duration-300 font-semibold text-lg" data-event="click:completeOnboarding">
+                            <span data-bind="t('onboarding.complete')">Complete Setup</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: OnboardingProfileForm -->
+
+        <!-- @COMPONENT: Dashboard [Main app dashboard] -->
+        <section id="dashboard" class="hidden min-h-screen bg-background">
+            <!-- Header -->
+            <header class="bg-card border-b border-border p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-foreground" data-bind="t('dashboard.welcome')">Welcome, <span data-bind="user.name">Farmer</span></h1>
+                        <p class="text-muted-foreground" data-bind="user.location">Sangli, Maharashtra</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="p-3 bg-muted rounded-xl hover:bg-muted/80 transition-colors">
+                            <i class="fas fa-bell text-lg"></i>
+                        </button>
+                        <button class="p-3 bg-muted rounded-xl hover:bg-muted/80 transition-colors">
+                            <i class="fas fa-user text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Quick Actions -->
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-foreground mb-4" data-bind="t('dashboard.quickActions')">Quick Actions</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button class="bg-card p-6 rounded-2xl border border-border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" data-event="click:openCropDetect">
+                        <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-camera text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-center" data-bind="t('dashboard.detectDisease')">Detect Disease</h3>
+                    </button>
+
+                    <button class="bg-card p-6 rounded-2xl border border-border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" data-event="click:openWeather">
+                        <div class="w-16 h-16 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-cloud-sun text-blue-500 text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-center" data-bind="t('dashboard.weather')">Weather</h3>
+                    </button>
+
+                    <button class="bg-card p-6 rounded-2xl border border-border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" data-event="click:openMandiPrices">
+                        <div class="w-16 h-16 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-line text-accent text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-center" data-bind="t('dashboard.mandiPrices')">Mandi Prices</h3>
+                    </button>
+
+                    <button class="bg-card p-6 rounded-2xl border border-border hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" data-event="click:openCommunity">
+                        <div class="w-16 h-16 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-users text-purple-500 text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-center" data-bind="t('dashboard.community')">Community</h3>
+                    </button>
+                </div>
+            </div>
+
+            <!-- @COMPONENT: WeatherWidget [Current weather display] -->
+            <div class="px-6 mb-6">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold mb-1" data-bind="t('weather.current')">Current Weather</h3>
+                            <p class="text-blue-100" data-bind="weather.location">Sangli, Maharashtra</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-bold" data-bind="weather.temperature">28°C</div>
+                            <div class="text-blue-100" data-bind="weather.condition">Sunny</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-4 text-blue-100">
+                        <div class="flex items-center">
+                            <i class="fas fa-eye mr-2"></i>
+                            <span data-bind="weather.humidity">65% Humidity</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-wind mr-2"></i>
+                            <span data-bind="weather.windSpeed">12 km/h</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: WeatherWidget -->
+
+            <!-- Recent Reports -->
+            <div class="px-6 mb-6">
+                <h2 class="text-xl font-semibold text-foreground mb-4" data-bind="t('dashboard.recentReports')">Recent Disease Reports</h2>
+                <div class="space-y-3">
+                    <!-- @MAP: reports.map(report => ( -->
+                    <div class="bg-card p-4 rounded-xl border border-border flex items-center">
+                        <div class="w-16 h-16 bg-muted rounded-lg mr-4">
+                            <!-- Crop disease detection result image placeholder -->
+                            <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=64&h=64" alt="Diseased crop leaf" class="w-full h-full object-cover rounded-lg" data-mock-image="true" />
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-foreground" data-bind="report.disease">Leaf Blight</h4>
+                            <p class="text-muted-foreground text-sm" data-bind="report.crop">Rice • <span data-bind="report.date">2 days ago</span></p>
+                        </div>
+                        <div class="px-3 py-1 bg-destructive/10 text-destructive rounded-full text-sm font-medium">
+                            <span data-bind="report.severity">High</span>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+
+            <!-- @COMPONENT: BottomNavigation [Morphing bottom navigation] -->
+            <nav class="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
+                <div class="flex items-center justify-around py-3">
+                    <button class="flex flex-col items-center p-2 text-primary" data-event="click:navHome">
+                        <i class="fas fa-home text-xl mb-1"></i>
+                        <span class="text-xs" data-bind="t('nav.home')">Home</span>
+                    </button>
+                    <button class="flex flex-col items-center p-2 text-muted-foreground hover:text-primary transition-colors" data-event="click:navDetect">
+                        <i class="fas fa-camera text-xl mb-1"></i>
+                        <span class="text-xs" data-bind="t('nav.detect')">Detect</span>
+                    </button>
+                    <button class="flex flex-col items-center p-2 text-muted-foreground hover:text-primary transition-colors" data-event="click:navMarket">
+                        <i class="fas fa-store text-xl mb-1"></i>
+                        <span class="text-xs" data-bind="t('nav.market')">Market</span>
+                    </button>
+                    <button class="flex flex-col items-center p-2 text-muted-foreground hover:text-primary transition-colors" data-event="click:navCommunity">
+                        <i class="fas fa-users text-xl mb-1"></i>
+                        <span class="text-xs" data-bind="t('nav.community')">Community</span>
+                    </button>
+                    <button class="flex flex-col items-center p-2 text-muted-foreground hover:text-primary transition-colors" data-event="click:navProfile">
+                        <i class="fas fa-user text-xl mb-1"></i>
+                        <span class="text-xs" data-bind="t('nav.profile')">Profile</span>
+                    </button>
+                </div>
+            </nav>
+            <!-- @END_COMPONENT: BottomNavigation -->
+        </section>
+        <!-- @END_COMPONENT: Dashboard -->
+
+        <!-- @COMPONENT: CropDetection [Camera capture and AI detection] -->
+        <section id="crop-detect" class="hidden min-h-screen bg-background">
+            <header class="bg-card border-b border-border p-6 flex items-center">
+                <button class="mr-4 p-2 hover:bg-muted rounded-lg transition-colors" data-event="click:goBack">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h1 class="text-xl font-semibold" data-bind="t('cropDetect.title')">Crop Disease Detection</h1>
+            </header>
+
+            <!-- @COMPONENT: CameraCapture [Camera interface with overlay guides] -->
+            <div class="p-6">
+                <div class="bg-card rounded-2xl border border-border overflow-hidden">
+                    <div class="relative aspect-square bg-muted">
+                        <!-- @FUNCTIONALITY: Camera feed integration with crop leaf detection guides -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-camera text-6xl text-muted-foreground mb-4"></i>
+                                <p class="text-muted-foreground" data-bind="t('cropDetect.cameraPlaceholder')">Camera feed will appear here</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Camera overlay guide -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-64 h-64 border-4 border-white/50 rounded-2xl">
+                                <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-2xl"></div>
+                                <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-2xl"></div>
+                                <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-2xl"></div>
+                                <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-2xl"></div>
+                            </div>
+                        </div>
+
+                        <!-- Instructions overlay -->
+                        <div class="absolute top-4 left-4 right-4 bg-black/50 text-white p-3 rounded-lg backdrop-blur-sm">
+                            <p class="text-sm text-center" data-bind="t('cropDetect.instructions')">Position the diseased leaf within the frame and capture</p>
+                        </div>
+                    </div>
+
+                    <!-- Camera controls -->
+                    <div class="p-6 flex items-center justify-center space-x-6">
+                        <button class="w-16 h-16 bg-muted rounded-full flex items-center justify-center hover:bg-muted/80 transition-colors" data-event="click:toggleFlash">
+                            <i class="fas fa-bolt text-xl"></i>
+                        </button>
+                        
+                        <!-- Capture button with shutter animation -->
+                        <button class="w-20 h-20 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 transition-all duration-300 transform hover:scale-105 shadow-lg" data-event="click:captureImage" data-implementation="Should implement camera shutter animation">
+                            <i class="fas fa-camera text-2xl"></i>
+                        </button>
+                        
+                        <button class="w-16 h-16 bg-muted rounded-full flex items-center justify-center hover:bg-muted/80 transition-colors" data-event="click:switchCamera">
+                            <i class="fas fa-sync-alt text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent captures -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-4" data-bind="t('cropDetect.recentCaptures')">Recent Captures</h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <!-- @MAP: recentCaptures.map(capture => ( -->
+                        <div class="aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" data-event="click:viewCapture">
+                            <!-- Captured crop disease image thumbnail -->
+                            <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200" alt="Captured crop disease sample" class="w-full h-full object-cover" data-mock-image="true" />
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: CameraCapture -->
+        </section>
+        <!-- @END_COMPONENT: CropDetection -->
+
+        <!-- @COMPONENT: DetectionResultModal [AI detection results display] -->
+        <div id="detection-result-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+            <div class="bg-card rounded-3xl max-w-md w-full border border-border shadow-2xl">
+                <div class="p-6">
+                    <!-- @FUNCTIONALITY: Lottie animation for analysis progress -->
+                    <div class="text-center mb-6">
+                        <div class="w-24 h-24 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-microscope text-primary text-3xl animate-pulse-slow"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2" data-bind="t('detection.analyzing')">Analyzing Image...</h3>
+                        <div class="w-full bg-muted rounded-full h-2">
+                            <div class="bg-primary h-2 rounded-full animate-pulse" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Detection Result (shown after analysis) -->
+                    <div id="detection-result" class="hidden">
+                        <div class="text-center mb-6">
+                            <!-- Analyzed crop image -->
+                            <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200" alt="Analyzed crop leaf" class="w-32 h-32 mx-auto rounded-xl mb-4 object-cover" data-mock-image="true" />
+                            
+                            <h3 class="text-xl font-semibold text-foreground mb-2" data-bind="detection.diseaseName">Leaf Blight Detected</h3>
+                            <div class="inline-flex items-center px-3 py-1 bg-destructive/10 text-destructive rounded-full text-sm font-medium">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span data-bind="detection.severity">High Severity</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-foreground mb-2" data-bind="t('detection.symptoms')">Symptoms</h4>
+                                <p class="text-muted-foreground text-sm" data-bind="detection.symptoms" data-mock="true">
+                                    Brown spots with yellow halos on leaves, progressive leaf yellowing and wilting.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-foreground mb-2" data-bind="t('detection.treatment')">Recommended Treatment</h4>
+                                <ul class="text-muted-foreground text-sm space-y-1" data-mock="true">
+                                    <li>• Remove affected leaves immediately</li>
+                                    <li>• Apply copper-based fungicide spray</li>
+                                    <li>• Improve field drainage</li>
+                                    <li>• Monitor surrounding crops</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-foreground mb-2" data-bind="t('detection.confidence')">Confidence</h4>
+                                <div class="flex items-center">
+                                    <div class="w-full bg-muted rounded-full h-2 mr-3">
+                                        <div class="bg-primary h-2 rounded-full" style="width: 87%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium" data-bind="detection.confidence">87%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 mt-6">
+                            <button class="flex-1 bg-secondary text-secondary-foreground py-3 rounded-xl hover:bg-secondary/80 transition-colors font-semibold" data-event="click:saveReport">
+                                <i class="fas fa-save mr-2"></i>
+                                <span data-bind="t('detection.saveReport')">Save Report</span>
+                            </button>
+                            <button class="flex-1 bg-primary text-primary-foreground py-3 rounded-xl hover:bg-primary/90 transition-colors font-semibold" data-event="click:shareReport">
+                                <i class="fas fa-share mr-2"></i>
+                                <span data-bind="t('detection.share')">Share</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="absolute top-4 right-4 p-2 hover:bg-muted rounded-lg transition-colors" data-event="click:closeModal">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: DetectionResultModal -->
+
+        <!-- @COMPONENT: MandiPrices [Market price tracking] -->
+        <section id="mandi-prices" class="hidden min-h-screen bg-background">
+            <header class="bg-card border-b border-border p-6 flex items-center">
+                <button class="mr-4 p-2 hover:bg-muted rounded-lg transition-colors" data-event="click:goBack">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h1 class="text-xl font-semibold" data-bind="t('mandi.title')">Mandi Prices</h1>
+            </header>
+
+            <div class="p-6">
+                <!-- Location and date selector -->
+                <div class="bg-card rounded-2xl border border-border p-6 mb-6">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('mandi.selectLocation')">Select Market</label>
+                            <select class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background">
+                                <option>Sangli Market</option>
+                                <option>Mumbai APMC</option>
+                                <option>Pune Market</option>
+                                <option>Nashik Market</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2" data-bind="t('mandi.selectDate')">Date</label>
+                            <input type="date" class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price cards -->
+                <div class="space-y-4">
+                    <!-- @MAP: mandiPrices.map(price => ( -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-seedling text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-foreground" data-bind="price.crop">Rice (Basmati)</h3>
+                                    <p class="text-muted-foreground text-sm" data-bind="price.variety">Grade A Quality</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-foreground" data-bind="price.current">₹3,200</div>
+                                <div class="text-sm text-muted-foreground" data-bind="price.unit">per quintal</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="flex items-center text-green-600">
+                                <i class="fas fa-arrow-up mr-1"></i>
+                                <span class="text-sm font-medium" data-bind="price.change">+₹150 (4.9%)</span>
+                            </div>
+                            <div class="text-sm text-muted-foreground" data-bind="price.lastUpdated">Updated 2 hours ago</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-wheat-awn text-accent"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-foreground">Wheat</h3>
+                                    <p class="text-muted-foreground text-sm">Lokvan Variety</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-foreground">₹2,850</div>
+                                <div class="text-sm text-muted-foreground">per quintal</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="flex items-center text-red-600">
+                                <i class="fas fa-arrow-down mr-1"></i>
+                                <span class="text-sm font-medium">-₹75 (2.6%)</span>
+                            </div>
+                            <div class="text-sm text-muted-foreground">Updated 1 hour ago</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-seedling text-blue-500"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-foreground">Cotton</h3>
+                                    <p class="text-muted-foreground text-sm">Medium Staple</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-foreground">₹6,400</div>
+                                <div class="text-sm text-muted-foreground">per quintal</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="flex items-center text-muted-foreground">
+                                <i class="fas fa-minus mr-1"></i>
+                                <span class="text-sm font-medium">No change</span>
+                            </div>
+                            <div class="text-sm text-muted-foreground">Updated 3 hours ago</div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+
+                <!-- Price alerts -->
+                <div class="mt-8 bg-accent/10 rounded-2xl p-6 border border-accent/20">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-bell text-accent mr-3"></i>
+                        <h3 class="font-semibold text-foreground" data-bind="t('mandi.priceAlerts')">Price Alerts</h3>
+                    </div>
+                    <p class="text-muted-foreground text-sm mb-4" data-bind="t('mandi.alertDescription')">
+                        Set price alerts for your crops and get notified when prices reach your target.
+                    </p>
+                    <button class="bg-accent text-accent-foreground px-6 py-3 rounded-xl hover:bg-accent/90 transition-colors font-semibold" data-event="click:setupPriceAlerts">
+                        <span data-bind="t('mandi.setupAlerts')">Setup Alerts</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: MandiPrices -->
+
+        <!-- @COMPONENT: CommunityFeed [Farmer community and discussions] -->
+        <section id="community" class="hidden min-h-screen bg-background">
+            <header class="bg-card border-b border-border p-6 flex items-center">
+                <button class="mr-4 p-2 hover:bg-muted rounded-lg transition-colors" data-event="click:goBack">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h1 class="text-xl font-semibold" data-bind="t('community.title')">Community</h1>
+                <button class="ml-auto p-2 hover:bg-muted rounded-lg transition-colors" data-event="click:createPost">
+                    <i class="fas fa-plus text-xl"></i>
+                </button>
+            </header>
+
+            <div class="p-6 space-y-6">
+                <!-- Community stats -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-card rounded-xl border border-border p-4 text-center">
+                        <div class="text-2xl font-bold text-primary">2.5K</div>
+                        <div class="text-sm text-muted-foreground" data-bind="t('community.totalFarmers')">Farmers</div>
+                    </div>
+                    <div class="bg-card rounded-xl border border-border p-4 text-center">
+                        <div class="text-2xl font-bold text-accent">450</div>
+                        <div class="text-sm text-muted-foreground" data-bind="t('community.activePosts')">Posts Today</div>
+                    </div>
+                    <div class="bg-card rounded-xl border border-border p-4 text-center">
+                        <div class="text-2xl font-bold text-blue-500">95%</div>
+                        <div class="text-sm text-muted-foreground" data-bind="t('community.helpRate')">Help Rate</div>
+                    </div>
+                </div>
+
+                <!-- Community posts -->
+                <div class="space-y-4">
+                    <!-- @MAP: communityPosts.map(post => ( -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                                <span class="text-white font-semibold" data-bind="post.authorInitials">RK</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <h4 class="font-semibold text-foreground" data-bind="post.authorName">Rajesh Kumar</h4>
+                                    <span class="text-muted-foreground text-sm" data-bind="post.location">• Pune</span>
+                                    <span class="text-muted-foreground text-sm" data-bind="post.timeAgo">• 2h ago</span>
+                                </div>
+                                <p class="text-foreground mb-4" data-bind="post.content" data-mock="true">
+                                    My rice crop is showing yellow spots on leaves. Has anyone faced similar issue? Looking for advice on treatment. Photos attached below.
+                                </p>
+                                
+                                <!-- Post images -->
+                                <div class="grid grid-cols-2 gap-2 mb-4">
+                                    <!-- Farmer's crop disease photo shared in community -->
+                                    <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&h=200" alt="Farmer's crop showing disease symptoms" class="rounded-lg object-cover h-32 w-full" data-mock-image="true" />
+                                    <!-- Close-up of diseased rice leaves -->
+                                    <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&h=200" alt="Close-up of diseased rice plant leaves" class="rounded-lg object-cover h-32 w-full" data-mock-image="true" />
+                                </div>
+
+                                <div class="flex items-center space-x-6 text-muted-foreground">
+                                    <button class="flex items-center space-x-2 hover:text-primary transition-colors" data-event="click:likePost">
+                                        <i class="fas fa-heart"></i>
+                                        <span data-bind="post.likes">24</span>
+                                    </button>
+                                    <button class="flex items-center space-x-2 hover:text-primary transition-colors" data-event="click:commentPost">
+                                        <i class="fas fa-comment"></i>
+                                        <span data-bind="post.comments">12</span>
+                                    </button>
+                                    <button class="flex items-center space-x-2 hover:text-primary transition-colors" data-event="click:sharePost">
+                                        <i class="fas fa-share"></i>
+                                        <span data-bind="t('community.share')">Share</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
+                                <span class="text-white font-semibold">SP</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <h4 class="font-semibold text-foreground">Suresh Patil</h4>
+                                    <span class="text-muted-foreground text-sm">• Sangli</span>
+                                    <span class="text-muted-foreground text-sm">• 4h ago</span>
+                                </div>
+                                <p class="text-foreground mb-4" data-mock="true">
+                                    Great cotton harvest this season! Used organic fertilizers and the yield increased by 30%. Happy to share my experience with fellow farmers.
+                                </p>
+
+                                <div class="flex items-center space-x-6 text-muted-foreground">
+                                    <button class="flex items-center space-x-2 hover:text-primary transition-colors">
+                                        <i class="fas fa-heart text-red-500"></i>
+                                        <span>18</span>
+                                    </button>
+                                    <button class="flex items-center space-x-2 hover:text-primary transition-colors">
+                                        <i class="fas fa-comment"></i>
+                                        <span>8</span>
+                                    </button>
+                                    <button class="flex items-center space-x-2 hover:text-primary transition-colors">
+                                        <i class="fas fa-share"></i>
+                                        <span>Share</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: CommunityFeed -->
+
+        <!-- @COMPONENT: Marketplace [Buy/sell agricultural products] -->
+        <section id="marketplace" class="hidden min-h-screen bg-background">
+            <header class="bg-card border-b border-border p-6 flex items-center">
+                <button class="mr-4 p-2 hover:bg-muted rounded-lg transition-colors" data-event="click:goBack">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h1 class="text-xl font-semibold" data-bind="t('marketplace.title')">Marketplace</h1>
+                <button class="ml-auto p-2 hover:bg-muted rounded-lg transition-colors" data-event="click:sellProduct">
+                    <i class="fas fa-plus text-xl"></i>
+                </button>
+            </header>
+
+            <div class="p-6">
+                <!-- Category tabs -->
+                <div class="flex space-x-2 mb-6 overflow-x-auto">
+                    <button class="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold whitespace-nowrap" data-bind="t('marketplace.all')">All</button>
+                    <button class="px-6 py-3 bg-muted text-foreground rounded-xl font-semibold whitespace-nowrap hover:bg-muted/80" data-bind="t('marketplace.seeds')">Seeds</button>
+                    <button class="px-6 py-3 bg-muted text-foreground rounded-xl font-semibold whitespace-nowrap hover:bg-muted/80" data-bind="t('marketplace.fertilizers')">Fertilizers</button>
+                    <button class="px-6 py-3 bg-muted text-foreground rounded-xl font-semibold whitespace-nowrap hover:bg-muted/80" data-bind="t('marketplace.tools')">Tools</button>
+                    <button class="px-6 py-3 bg-muted text-foreground rounded-xl font-semibold whitespace-nowrap hover:bg-muted/80" data-bind="t('marketplace.produce')">Produce</button>
+                </div>
+
+                <!-- Marketplace listings -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- @MAP: marketplaceItems.map(item => ( -->
+                    <div class="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow">
+                        <!-- High-quality seeds for sale in farm marketplace -->
+                        <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=200" alt="Premium quality agricultural seeds" class="w-full h-48 object-cover" data-mock-image="true" />
+                        
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="font-semibold text-foreground" data-bind="item.title">Premium Rice Seeds</h3>
+                                <span class="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm font-medium" data-bind="item.category">Seeds</span>
+                            </div>
+                            <p class="text-muted-foreground text-sm mb-4" data-bind="item.description" data-mock="true">
+                                High-yield Basmati rice seeds, disease-resistant variety. Perfect for Maharashtra climate.
+                            </p>
+                            
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-2xl font-bold text-foreground" data-bind="item.price">₹800/kg</div>
+                                <div class="text-sm text-muted-foreground" data-bind="item.quantity">50 kg available</div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-muted-foreground text-sm">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <span data-bind="item.location">Sangli, MH</span>
+                                </div>
+                                <button class="bg-primary text-primary-foreground px-6 py-2 rounded-xl hover:bg-primary/90 transition-colors font-semibold" data-event="click:contactSeller">
+                                    <span data-bind="t('marketplace.contact')">Contact</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow">
+                        <!-- Organic fertilizer products for farming -->
+                        <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=200" alt="Organic fertilizer bags in farm setting" class="w-full h-48 object-cover" data-mock-image="true" />
+                        
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="font-semibold text-foreground">Organic Fertilizer</h3>
+                                <span class="px-2 py-1 bg-accent/10 text-accent rounded-lg text-sm font-medium">Fertilizer</span>
+                            </div>
+                            <p class="text-muted-foreground text-sm mb-4" data-mock="true">
+                                100% organic cow dung fertilizer, perfect for all crops. Improves soil health naturally.
+                            </p>
+                            
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-2xl font-bold text-foreground">₹15/kg</div>
+                                <div class="text-sm text-muted-foreground">500 kg available</div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-muted-foreground text-sm">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <span>Kolhapur, MH</span>
+                                </div>
+                                <button class="bg-primary text-primary-foreground px-6 py-2 rounded-xl hover:bg-primary/90 transition-colors font-semibold">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow">
+                        <!-- Modern farming equipment and tools -->
+                        <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=200" alt="Agricultural farming tools and equipment" class="w-full h-48 object-cover" data-mock-image="true" />
+                        
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="font-semibold text-foreground">Power Tiller</h3>
+                                <span class="px-2 py-1 bg-blue-500/10 text-blue-500 rounded-lg text-sm font-medium">Tools</span>
+                            </div>
+                            <p class="text-muted-foreground text-sm mb-4" data-mock="true">
+                                Well-maintained power tiller, ideal for small to medium farms. Low running hours.
+                            </p>
+                            
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-2xl font-bold text-foreground">₹45,000</div>
+                                <div class="text-sm text-muted-foreground">Used - Good condition</div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-muted-foreground text-sm">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <span>Satara, MH</span>
+                                </div>
+                                <button class="bg-primary text-primary-foreground px-6 py-2 rounded-xl hover:bg-primary/90 transition-colors font-semibold">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow">
+                        <!-- Fresh agricultural produce for sale -->
+                        <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=200" alt="Fresh harvested vegetables and fruits" class="w-full h-48 object-cover" data-mock-image="true" />
+                        
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="font-semibold text-foreground">Fresh Tomatoes</h3>
+                                <span class="px-2 py-1 bg-green-500/10 text-green-500 rounded-lg text-sm font-medium">Produce</span>
+                            </div>
+                            <p class="text-muted-foreground text-sm mb-4" data-mock="true">
+                                Fresh farm tomatoes, harvested yesterday. Perfect for wholesale or retail.
+                            </p>
+                            
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-2xl font-bold text-foreground">₹25/kg</div>
+                                <div class="text-sm text-muted-foreground">200 kg available</div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-muted-foreground text-sm">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <span>Nashik, MH</span>
+                                </div>
+                                <button class="bg-primary text-primary-foreground px-6 py-2 rounded-xl hover:bg-primary/90 transition-colors font-semibold">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: Marketplace -->
+
+        <!-- @COMPONENT: HelpAssistant [AI-powered farming assistant] -->
+        <section id="help-assistant" class="hidden min-h-screen bg-background">
+            <header class="bg-card border-b border-border p-6 flex items-center">
+                <button class="mr-4 p-2 hover:bg-muted rounded-lg transition-colors" data-event="click:goBack">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h1 class="text-xl font-semibold" data-bind="t('assistant.title')">AI Farm Assistant</h1>
+            </header>
+
+            <div class="flex-1 p-6">
+                <!-- Chat interface -->
+                <div class="bg-card rounded-2xl border border-border h-96 flex flex-col">
+                    <div class="p-4 border-b border-border">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-foreground" data-bind="t('assistant.name')">FarmBot Assistant</h3>
+                                <p class="text-muted-foreground text-sm" data-bind="t('assistant.status')">Online - Ready to help</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat messages -->
+                    <div class="flex-1 p-4 space-y-4 overflow-y-auto">
+                        <!-- @MAP: chatMessages.map(message => ( -->
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <div class="bg-muted p-3 rounded-lg max-w-xs">
+                                <p class="text-sm" data-bind="message.text" data-mock="true">
+                                    Hello! I'm your AI farming assistant. I can help you with crop diseases, weather forecasts, best practices, and answer any farming questions you have. How can I assist you today?
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3 justify-end">
+                            <div class="bg-primary text-primary-foreground p-3 rounded-lg max-w-xs">
+                                <p class="text-sm" data-mock="true">
+                                    I noticed some yellowing in my rice leaves. What could be the cause?
+                                </p>
+                            </div>
+                            <div class="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-muted-foreground text-sm"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <div class="bg-muted p-3 rounded-lg max-w-xs">
+                                <p class="text-sm" data-mock="true">
+                                    Yellowing in rice leaves can have several causes: nutrient deficiency (especially nitrogen), overwatering, disease, or pests. Can you share a photo? Also, when did you last apply fertilizer and how's the drainage in your field?
+                                </p>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+
+                    <!-- Message input -->
+                    <div class="p-4 border-t border-border">
+                        <div class="flex space-x-3">
+                            <input type="text" placeholder="Type your farming question..." class="flex-1 px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background" data-bind="messageInput" />
+                            <button class="bg-primary text-primary-foreground p-3 rounded-xl hover:bg-primary/90 transition-colors" data-event="click:sendMessage">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick suggestions -->
+                <div class="mt-6">
+                    <h3 class="font-semibold text-foreground mb-4" data-bind="t('assistant.quickHelp')">Quick Help</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="bg-card border border-border p-4 rounded-xl text-left hover:shadow-md transition-shadow" data-event="click:askWeatherAdvice">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-cloud-sun text-blue-500"></i>
+                                <span class="font-medium" data-bind="t('assistant.weatherAdvice')">Weather Advice</span>
+                            </div>
+                        </button>
+                        
+                        <button class="bg-card border border-border p-4 rounded-xl text-left hover:shadow-md transition-shadow" data-event="click:askCropCare">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-seedling text-primary"></i>
+                                <span class="font-medium" data-bind="t('assistant.cropCare')">Crop Care</span>
+                            </div>
+                        </button>
+                        
+                        <button class="bg-card border border-border p-4 rounded-xl text-left hover:shadow-md transition-shadow" data-event="click:askFertilizerAdvice">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-leaf text-accent"></i>
+                                <span class="font-medium" data-bind="t('assistant.fertilizer')">Fertilizer Tips</span>
+                            </div>
+                        </button>
+                        
+                        <button class="bg-card border border-border p-4 rounded-xl text-left hover:shadow-md transition-shadow" data-event="click:askPestControl">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-bug text-destructive"></i>
+                                <span class="font-medium" data-bind="t('assistant.pestControl')">Pest Control</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: HelpAssistant -->
+
+    </div>
+    <!-- @END_COMPONENT: App -->
+
+    <script>
+        // TODO: Implement React Router for navigation
+        // TODO: Implement Framer Motion page transitions
+        // TODO: Integrate react-i18next for bilingual support
+        // TODO: Add Lottie animations for loading states
+        // TODO: Implement tsParticles for hero background
+        // TODO: Add camera integration for crop detection
+        // TODO: Integrate Supabase for authentication and data
+        // TODO: Add real-time notifications
+        // TODO: Implement offline support
+
+        // Mock navigation functionality for demo
+        (function() {
+            const sections = ['landing', 'auth', 'onboarding', 'dashboard', 'crop-detect', 'mandi-prices', 'community', 'marketplace', 'help-assistant'];
+            
+            function showSection(sectionId) {
+                sections.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.classList.add('hidden');
+                    }
+                });
+                
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+            }
+
+            // Mock navigation events
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('[data-event]');
+                if (!target) return;
+
+                const event = target.getAttribute('data-event');
+                
+                switch(event) {
+                    case 'click:sendOTP':
+                        document.getElementById('phone-step').classList.add('hidden');
+                        document.getElementById('otp-step').classList.remove('hidden');
+                        break;
+                    case 'click:verifyOTP':
+                        showSection('onboarding');
+                        break;
+                    case 'click:completeOnboarding':
+                        showSection('dashboard');
+                        break;
+                    case 'click:openCropDetect':
+                        showSection('crop-detect');
+                        break;
+                    case 'click:openWeather':
+                        // Weather widget is already visible on dashboard
+                        break;
+                    case 'click:openMandiPrices':
+                        showSection('mandi-prices');
+                        break;
+                    case 'click:openCommunity':
+                        showSection('community');
+                        break;
+                    case 'click:navHome':
+                        showSection('dashboard');
+                        break;
+                    case 'click:navDetect':
+                        showSection('crop-detect');
+                        break;
+                    case 'click:navMarket':
+                        showSection('marketplace');
+                        break;
+                    case 'click:navCommunity':
+                        showSection('community');
+                        break;
+                    case 'click:navProfile':
+                        // TODO: Implement profile page
+                        break;
+                    case 'click:captureImage':
+                        // Simulate image capture and analysis
+                        document.getElementById('detection-result-modal').classList.remove('hidden');
+                        setTimeout(() => {
+                            document.getElementById('detection-result').classList.remove('hidden');
+                        }, 3000);
+                        break;
+                    case 'click:closeModal':
+                        document.getElementById('detection-result-modal').classList.add('hidden');
+                        document.getElementById('detection-result').classList.add('hidden');
+                        break;
+                    case 'click:goBack':
+                        showSection('dashboard');
+                        break;
+                }
+            });
+
+            // Initialize with landing page
+            showSection('landing');
+        })();
+    </script>
+</body>
+</html>
