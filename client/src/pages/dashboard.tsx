@@ -43,8 +43,8 @@ export default function Dashboard() {
   const quickActions = [
     {
       icon: Camera,
-      title: "Crop Detection",
-      description: "Scan your crops for diseases",
+      title: t("dashboard.actions.cropDetection"),
+      description: t("dashboard.actions.cropDetectionDesc"),
       href: "/crop-detect",
       bgColor: "bg-green-50",
       iconColor: "text-green-600",
@@ -52,8 +52,8 @@ export default function Dashboard() {
     },
     {
       icon: BarChart3,
-      title: "Market Prices",
-      description: "Check live commodity prices",
+      title: t("dashboard.actions.marketPrices"),
+      description: t("dashboard.actions.marketPricesDesc"),
       href: "/mandi-prices",
       bgColor: "bg-orange-50",
       iconColor: "text-orange-600",
@@ -61,8 +61,8 @@ export default function Dashboard() {
     },
     {
       icon: CloudSun,
-      title: "Weather",
-      description: "Get weather forecasts",
+      title: t("dashboard.actions.weatherTitle"),
+      description: t("dashboard.actions.weatherDesc"),
       href: "/weather",
       bgColor: "bg-blue-50",
       iconColor: "text-blue-600",
@@ -70,8 +70,8 @@ export default function Dashboard() {
     },
     {
       icon: Users,
-      title: "Community",
-      description: "Connect with other farmers",
+      title: t("dashboard.actions.communityTitle"),
+      description: t("dashboard.actions.communityDesc"),
       href: "/community",
       bgColor: "bg-purple-50",
       iconColor: "text-purple-600",
@@ -81,9 +81,9 @@ export default function Dashboard() {
 
   const currentHour = new Date().getHours();
   const getGreeting = () => {
-    if (currentHour < 12) return "Good Morning";
-    if (currentHour < 17) return "Good Afternoon";
-    return "Good Evening";
+    if (currentHour < 12) return t("dashboard.greetings.morning");
+    if (currentHour < 17) return t("dashboard.greetings.afternoon");
+    return t("dashboard.greetings.evening");
   };
 
   const getWeatherIcon = (temp: number) => {
@@ -99,11 +99,11 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground" data-testid="welcome-message">
-              {getGreeting()}, {user?.name || "Farmer"}!
+              {getGreeting()}, {user?.name || t("dashboard.farmer")}!
             </h1>
             <div className="flex items-center text-muted-foreground text-sm mt-1" data-testid="user-location">
               <MapPin className="w-4 h-4 mr-1" />
-              {user?.location || "Farm Location"} • {new Date().toLocaleDateString()}
+              {user?.location || t("dashboard.farmLocation")} • {new Date().toLocaleDateString()}
             </div>
           </div>
           <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">
@@ -120,7 +120,7 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-foreground mb-1">Today's Weather</h3>
+                  <h3 className="font-semibold text-foreground mb-1">{t("dashboard.todaysWeather")}</h3>
                   <p className="text-sm text-muted-foreground">
                     {weatherData.location}
                   </p>
@@ -151,7 +151,7 @@ export default function Dashboard() {
               <div className="text-xl font-semibold text-foreground">
                 {Array.isArray(recentReports) ? recentReports.length : 0}
               </div>
-              <div className="text-xs text-muted-foreground">Reports</div>
+              <div className="text-xs text-muted-foreground">{t("dashboard.reports")}</div>
             </CardContent>
           </Card>
 
@@ -163,7 +163,7 @@ export default function Dashboard() {
               <div className="text-xl font-semibold text-foreground">
                 {(communityStats as any)?.totalFarmers || "2.5K"}
               </div>
-              <div className="text-xs text-muted-foreground">Farmers</div>
+              <div className="text-xs text-muted-foreground">{t("dashboard.farmers")}</div>
             </CardContent>
           </Card>
 
@@ -175,7 +175,7 @@ export default function Dashboard() {
               <div className="text-xl font-semibold text-foreground">
                 {(communityStats as any)?.activePosts || "157"}
               </div>
-              <div className="text-xs text-muted-foreground">Posts</div>
+              <div className="text-xs text-muted-foreground">{t("dashboard.posts")}</div>
             </CardContent>
           </Card>
         </div>
@@ -184,7 +184,7 @@ export default function Dashboard() {
         <div>
           <h2 className="section-header" data-testid="quick-actions-title">
             <Plus className="h-5 w-5" />
-            Quick Actions
+            {t("dashboard.quickActions")}
           </h2>
           <div className="grid grid-cols-2 gap-4">
             {quickActions.map((action) => (
@@ -215,12 +215,12 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="section-header" data-testid="recent-reports-title">
               <Eye className="h-5 w-5" />
-              Recent Reports
+              {t("dashboard.recentReportsTitle")}
             </h2>
             {Array.isArray(recentReports) && recentReports.length > 0 && (
               <Link href="/crop-detect">
                 <Button variant="ghost" size="sm" className="text-xs">
-                  View All <ArrowRight className="h-3 w-3 ml-1" />
+                  {t("dashboard.viewAll")} <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
               </Link>
             )}
@@ -251,7 +251,9 @@ export default function Dashboard() {
                         className="text-xs"
                         data-testid={`report-severity-${report.id}`}
                       >
-                        {report.severity}
+                        {report.severity === "High" ? t("dashboard.severity.high") :
+                         report.severity === "Medium" ? t("dashboard.severity.medium") :
+                         t("dashboard.severity.low")}
                       </Badge>
                     </div>
                   </CardContent>
@@ -264,14 +266,14 @@ export default function Dashboard() {
                 <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Camera className="h-8 w-8 text-green-600" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Start Crop Detection</h3>
+                <h3 className="font-semibold text-foreground mb-2">{t("dashboard.noReports.title")}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  No disease reports yet. Scan your crops to get started!
+                  {t("dashboard.noReports.description")}
                 </p>
                 <Link href="/crop-detect">
                   <Button className="btn-farm-primary" data-testid="button-start-detecting">
                     <Camera className="mr-2 h-4 w-4" />
-                    Scan Crops
+                    {t("dashboard.noReports.scanButton")}
                   </Button>
                 </Link>
               </CardContent>
@@ -284,14 +286,14 @@ export default function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-foreground mb-1">Farmer Marketplace</h3>
+                <h3 className="font-semibold text-foreground mb-1">{t("dashboard.marketplace.title")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  List your produce, get bids, and arrange logistics
+                  {t("dashboard.marketplace.description")}
                 </p>
               </div>
               <Link href="/farmer-marketplace">
                 <Button className="btn-farm-primary">
-                  Visit <ArrowRight className="ml-1 h-4 w-4" />
+                  {t("dashboard.marketplace.visit")} <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </Link>
             </div>
