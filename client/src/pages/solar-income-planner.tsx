@@ -46,15 +46,15 @@ export default function SolarIncomePlanner() {
   const form = useForm<SolarCalculatorForm>({
     resolver: zodResolver(solarCalculatorSchema),
     defaultValues: {
-      fieldSize: "",
+      fieldSize: "1",
       fieldSizeUnit: "acre",
-      currentCropIncome: "",
-      solarPanelCapacity: "",
-      sunlightHours: "",
-      electricityRate: "",
-      installationCost: "",
-      governmentSubsidy: "",
-      maintenanceCost: ""
+      currentCropIncome: "100000",
+      solarPanelCapacity: "100",
+      sunlightHours: "5",
+      electricityRate: "6.0",
+      installationCost: "50000",
+      governmentSubsidy: "20000",
+      maintenanceCost: "5000"
     }
   });
 
@@ -264,7 +264,7 @@ export default function SolarIncomePlanner() {
                   </div>
 
                   {/* Solar System Information */}
-                  <div className="space-y-4">
+                  {/* <div className="space-y-4">
                     <h4 className="font-semibold text-foreground">{t("solar.solarInfo")}</h4>
                     
                     <FormField
@@ -337,10 +337,10 @@ export default function SolarIncomePlanner() {
                         </FormItem>
                       )}
                     />
-                  </div>
+                  </div> */}
 
                   {/* Cost Information */}
-                  <div className="space-y-4 md:col-span-2">
+                  {/* <div className="space-y-4 md:col-span-2">
                     <h4 className="font-semibold text-foreground">{t("solar.costInfo")}</h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -413,7 +413,7 @@ export default function SolarIncomePlanner() {
                         )}
                       />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 <Button 

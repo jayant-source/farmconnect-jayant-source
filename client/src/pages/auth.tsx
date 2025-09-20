@@ -164,11 +164,29 @@ export default function Auth() {
       });
       return;
     }
-    
+
     if (!formData.name.trim()) {
       toast({
         title: "Error",
         description: "Please enter your name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.age.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your age",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.location.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your location",
         variant: "destructive",
       });
       return;
@@ -509,7 +527,7 @@ export default function Auth() {
                       whileHover={{ scale: 1.02 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Label htmlFor="age" className="block text-sm font-medium text-foreground mb-2">Age</Label>
+                      <Label htmlFor="age" className="block text-sm font-medium text-foreground mb-2">Age *</Label>
                       <Input
                         id="age"
                         type="number"
@@ -526,7 +544,7 @@ export default function Auth() {
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Label htmlFor="location" className="block text-sm font-medium text-foreground mb-2">Location</Label>
+                    <Label htmlFor="location" className="block text-sm font-medium text-foreground mb-2">Location *</Label>
                     <Input
                       id="location"
                       value={formData.location}

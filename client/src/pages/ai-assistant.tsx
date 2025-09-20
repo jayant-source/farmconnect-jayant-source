@@ -163,7 +163,7 @@ export default function AIAssistant() {
               <Bot className="text-white text-xl" />
             </motion.div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold text-foreground">
                 AI Farm Assistant
               </h1>
               <p className="text-sm text-muted-foreground flex items-center">
