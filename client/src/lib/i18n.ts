@@ -57,9 +57,9 @@ const resources = {
         community: "Community",
         recentReports: "Recent Disease Reports",
         greetings: {
-          morning: "Good Morning",
-          afternoon: "Good Afternoon",
-          evening: "Good Evening",
+          morning: "Hello",
+          afternoon: "Hello",
+          evening: "Hello",
         },
         farmer: "Farmer",
         farmLocation: "Farm Location",

@@ -103,7 +103,13 @@ export default function Dashboard() {
             </h1>
             <div className="flex items-center text-muted-foreground text-sm mt-1" data-testid="user-location">
               <MapPin className="w-4 h-4 mr-1" />
-              {user?.location || t("dashboard.farmLocation")} • {new Date().toLocaleDateString()}
+              {user?.location || t("dashboard.farmLocation")} • {(() => {
+                const d = new Date();
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
+              })()}
             </div>
           </div>
           <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">
